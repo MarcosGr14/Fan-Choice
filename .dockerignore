@@ -1,0 +1,13 @@
+node_modules
+.git
+.env
+.env.*
+.dev.vars*
+.wrangler
+dist
+coverage
+*.log
+*.pem
+*.key
+*.dump
+*.backup

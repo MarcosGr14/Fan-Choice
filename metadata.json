@@ -1,0 +1,7 @@
+{
+  "name": "K-pop / J-pop Rankings League",
+  "description": "Private music competition league ranking Male and Female K-pop/J-pop artists through daily participant votes and verified Spotify scrobble bonuses.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+

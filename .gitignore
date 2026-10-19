@@ -1,0 +1,19 @@
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+
+# Local secrets and deployment artifacts
+.dev.vars*
+.wrangler/
+*.pem
+*.key
+*.p12
+*.pfx
+*.dump
+*.backup
+*.tsbuildinfo
