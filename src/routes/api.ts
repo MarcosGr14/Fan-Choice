@@ -1,3 +1,4 @@
+import * as idolController from '../controllers/idolController';
 // ==============================================================================
 // K-POP / J-POP RANKINGS LEAGUE: REST API V1 ROUTES ROUTER
 // ==============================================================================
@@ -39,6 +40,10 @@ router.get('/league/artists', leagueController.getArtistsCatalog);
 // --- 4. VOTING (AUTHENTICATED) ---
 router.get('/votes/today', authenticate, voteController.getTodayVotes);
 router.put('/votes/ballot', authenticate, voteController.submitBallot);
+
+router.get('/idols', idolController.overview);
+router.get('/idols/me', authenticate, idolController.status);
+router.post('/idols/votes', authenticate, rateLimiter(30, 60000), idolController.submit);
 
 // --- 5. HISTORICAL ARCHIVE ---
 router.get('/archive/seasons', archiveController.listArchivedSeasons);

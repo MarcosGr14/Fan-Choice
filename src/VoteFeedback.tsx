@@ -21,7 +21,7 @@ export function NextVoteClock({ competitionDate }: { competitionDate: string }) 
   </div>;
 }
 
-export function VoteConfirmation({ category, onClose }: { category: Category; onClose: () => void }) {
+export function VoteConfirmation({ category, onClose, topSize = 5 }: { category: Category; onClose: () => void; topSize?: number }) {
   const dialog = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     const element = dialog.current;
@@ -32,7 +32,7 @@ export function VoteConfirmation({ category, onClose }: { category: Category; on
     <div className="vote-success-icon"><CheckCircle2 aria-hidden="true"/></div>
     <p className="eyebrow">{category === 'male' ? 'Hombres' : 'Mujeres'} · voto registrado</p>
     <h2 id="vote-confirmation-title">¡Tu voto cuenta!</h2>
-    <p id="vote-confirmation-description">Tu Top 5 de hoy quedó guardado.</p>
+    <p id="vote-confirmation-description">Tu Top {topSize} de hoy quedó guardado.</p>
     <p className="vote-confirmation-note">Mañana puedes volver a apoyar a tus favoritos.</p>
     <button autoFocus type="button" className="league-button" onClick={onClose}>Ver mi votación</button>
   </dialog>;
