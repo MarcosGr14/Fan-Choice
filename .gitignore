@@ -17,3 +17,23 @@ coverage/
 *.dump
 *.backup
 *.tsbuildinfo
+
+# Private notes, editor settings and temporary exports
+.local-notes/
+.local/
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+Thumbs.db
+*.bak
+*.orig
+*.rej
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.sql.gz
+*.sqlite
+*.sqlite3
+*.db

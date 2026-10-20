@@ -11,3 +11,14 @@ coverage
 *.key
 *.dump
 *.backup
+.local-notes
+.local
+.idea
+.vscode
+*.p12
+*.pfx
+*.bak
+*.sql.gz
+*.sqlite
+*.sqlite3
+*.db
