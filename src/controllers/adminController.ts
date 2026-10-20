@@ -1,3 +1,4 @@
+import { rankIdols } from '../services/idolService';
 // ==============================================================================
 // K-POP / J-POP RANKINGS LEAGUE: ADMIN CONTROLLER (ROLE = 'admin')
 // ==============================================================================
@@ -89,6 +90,8 @@ export async function closeSeason(req: AuthenticatedRequest, res: Response) {
       totalVotesCast: [...leagueStore.ballots.values()].filter(b => b.seasonId === season.id).reduce((n,b) => n + b.items.length, 0),
       totalStreamsLogged: [...standings.maleStats, ...standings.femaleStats].reduce((n,s) => n + s.cumulativeStreams, 0),
     });
+
+    closure.archivedRecord.idolRankings = rankIdols(leagueStore.idolSubmissions, season.id);
 
     // Update in-memory store
     await leagueStore.archiveSeasonPersisted(closure.archivedRecord, closure.frozenResults);

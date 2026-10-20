@@ -123,6 +123,7 @@ export interface SeasonFrozenResult {
 }
 
 export interface ArchivedSeasonRecord {
+  idolRankings?: import('./idols').IdolRankings;
   season: Season;
   closedAt: string;
   closedByDisplayName: string;

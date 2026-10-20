@@ -7,6 +7,7 @@ import { LoadingSkeleton } from './LoadingSkeleton';
 import { NextVoteClock, VoteConfirmation } from './VoteFeedback';
 import hero from './assets/images/league_hero_banner_1792299063889.jpg';
 
+const IdolLeague = lazy(() => import('./IdolLeague'));
 const LifetimeHistory = lazy(() => import('./LifetimeHistory').then(module => ({ default: module.LifetimeHistory })));
 
 type Overview = {
@@ -123,7 +124,7 @@ export function App() {
   return <div className="league-app">
     <header className="site-header"><div className="header-inner">
       <a href="/" className="brand"><Trophy/><span>Fan Choice <b>Most Populars</b></span></a>
-      <nav className="site-nav">{[['rankings','Clasificación'],['voting','Votar'],['history','Histórico'],['archive','Archivo'],...(user?.role==='admin'?[['admin','Administración']]:[])].map(([id,label])=><button key={id} onClick={()=>setTab(id)} className={tab===id?'nav-tab is-active':'nav-tab'}>{label}</button>)}</nav>
+      <nav className="site-nav">{[['rankings','Clasificación'],['voting','Votar'],['idols','Idols'],['history','Histórico'],['archive','Archivo'],...(user?.role==='admin'?[['admin','Administración']]:[])].map(([id,label])=><button key={id} onClick={()=>setTab(id)} className={tab===id?'nav-tab is-active':'nav-tab'}>{label}</button>)}</nav>
       {user ? <div className="flex items-center gap-3 text-sm"><span>{user.displayName}</span><button className="logout-button" aria-label="Salir" onClick={()=>{apiClient.setToken(null);setUser(null);setVotes(null);setTab('rankings');setNotice('Sesión cerrada.');}}><LogOut size={18}/> Salir</button></div> : <button className={button} onClick={()=>setShowLogin(true)}>Entrar</button>}
     </div></header>
     <main className="page-content space-y-7">
@@ -138,6 +139,7 @@ export function App() {
         </section><section className={card+' overview-stat'}><Music2/><p>Artistas</p><h2>{artists.length}</h2><span>K-pop · J-pop</span></section><section className={card+' overview-sync'}><RefreshCw/><p>Última sincronización</p><strong>{overview.syncStatus.totalRecords || overview.syncStatus.status==='success' ? time(overview.syncStatus.lastSyncTimestamp) : 'Pendiente de importación'}</strong><span>{overview.syncStatus.isMockProvider?'Demostración':'Spotify Duo Charts'} · {{success:'Actualizada',failed:'Error',partial:'Pendiente'}[overview.syncStatus.status] || overview.syncStatus.status}</span></section></div>
         {season && <CategoryRankings maleRows={overview.standings.maleStats} femaleRows={overview.standings.femaleStats}/>}
       </>}
+      {tab==='idols' && <Suspense fallback={<LoadingSkeleton/>}><IdolLeague key={user?.id || 'public'} user={user} onLogin={()=>setShowLogin(true)}/></Suspense>}
       {tab==='history' && <Suspense fallback={<LoadingSkeleton/>}><LifetimeHistory key={user?.id || 'public'} artists={artists} isAdmin={user?.role==='admin'} cache={historyCache}/></Suspense>}
       {tab==='voting' && <section className={card+' max-w-3xl mx-auto'}><div className="flex justify-between gap-4"><div><p className="text-emerald-300 text-xs uppercase tracking-widest">Votación diaria</p><h1 className="text-3xl font-bold mt-2">Tu Top 5</h1><p className="text-neutral-400 mt-2">{date} · Panamá · hasta las 23:59</p></div><Lock className="text-neutral-600"/></div>
         {!user ? <div className="mt-8"><p className="mb-4">Inicia sesión para guardar tu selección.</p><button className={button} onClick={()=>setShowLogin(true)}>Entrar</button></div> : <>

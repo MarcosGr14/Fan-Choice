@@ -1,3 +1,4 @@
+import type { IdolSubmission } from '../types/idols';
 // ==============================================================================
 // K-POP / J-POP RANKINGS LEAGUE: CAPA DE PERSISTENCIA EN POSTGRES (SUPABASE)
 // ==============================================================================
@@ -69,6 +70,22 @@ export class PostgresPersistence {
       await client.query('ROLLBACK');
       throw error;
     } finally { client.release(); }
+  }
+
+  async loadIdolSubmissions(): Promise<IdolSubmission[]> {
+    try {
+      const { rows } = await this.pool.query('SELECT season_id,participant_id,kind,category,competition_date,idol_ids FROM idol_submissions');
+      return rows.map(r => ({seasonId:r.season_id,participantId:r.participant_id,kind:r.kind,category:r.category,competitionDate:r.competition_date,idolIds:r.idol_ids}));
+    } catch (error: any) {
+      // Keep the existing league available until migration 004 has been applied.
+      if (error.code === '42P01') return [];
+      throw error;
+    }
+  }
+
+  async saveIdolSubmission(s: IdolSubmission) {
+    await this.pool.query('INSERT INTO idol_submissions (season_id,participant_id,kind,category,competition_date,idol_ids) VALUES ($1,$2,$3,$4,$5,$6)',
+      [s.seasonId,s.participantId,s.kind,s.category,s.competitionDate,JSON.stringify(s.idolIds)]);
   }
 
   async loadArchives(): Promise<ArchivedSeasonRecord[]> {

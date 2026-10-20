@@ -1,3 +1,4 @@
+import type { IdolSubmission } from '../types/idols';
 // ==============================================================================
 // K-POP / J-POP RANKINGS LEAGUE: PERSISTENT STATE REPOSITORY STORE
 // ==============================================================================
@@ -34,6 +35,7 @@ import { hashPassword } from '../services/passwordHash';
 import { PostgresPersistence } from './postgresPersistence';
 
 export class LeagueStore {
+  public idolSubmissions: IdolSubmission[] = [];
   public participants: Map<string, Participant & { passwordHash: string }> = new Map();
   public artists: Map<string, Artist> = new Map();
   public seasons: Map<string, Season> = new Map();
@@ -120,6 +122,8 @@ export class LeagueStore {
       const listening = await persistence.loadListeningByDate();
       const lastSync = await persistence.loadLastSync();
       const archives = await persistence.loadArchives();
+      const idolSubmissions = await persistence.loadIdolSubmissions();
+      this.idolSubmissions = idolSubmissions;
 
       // Reemplazar por completo el estado de ejemplo
       this.participants.clear();
@@ -180,6 +184,11 @@ export class LeagueStore {
     });
     this.workQueue = run.catch(() => undefined);
     return run;
+  }
+
+  async saveIdolSubmission(submission: IdolSubmission) {
+    if (this.persistence) await this.persistence.saveIdolSubmission(submission);
+    this.idolSubmissions.push(submission);
   }
 
   async createSeasonPersisted(season: Season) {
