@@ -4,6 +4,7 @@
 
 import { Request, Response } from 'express';
 import { leagueStore } from '../repositories/leagueStore';
+import { rankIdols } from '../services/idolService';
 
 export async function listArchivedSeasons(_req: Request, res: Response) {
   const archives = Array.from(leagueStore.archivedSeasons.values()).map((rec) => ({
@@ -42,6 +43,10 @@ export async function getArchivedSeasonDetails(req: Request, res: Response) {
 
   return res.status(200).json({
     success: true,
-    archive: record,
+    // Older season snapshots may predate idol voting. Rebuild their ranking
+    // from the original submissions without mutating or rewriting the archive.
+    archive: record.idolRankings
+      ? record
+      : { ...record, idolRankings: rankIdols(leagueStore.idolSubmissions, record.season.id, true) },
   });
 }

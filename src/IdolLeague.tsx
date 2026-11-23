@@ -74,7 +74,7 @@ export default function IdolLeague({user,onLogin}: {user: Participant | null; on
     setPicks(old=>{const next=[...old[category]];[next[index],next[index+delta]]=[next[index+delta],next[index]];return {...old,[category]:next};});
   }
   return <section className="idol-league space-y-6">
-    <div className="section-heading"><div><p className="eyebrow">Fan Choice · Solo votos</p><h1>Idols</h1></div><span>84 hombres · 71 mujeres</span></div>
+    <div className="section-heading"><div><p className="eyebrow">Fan Choice · Solo votos</p><h1>Idols</h1></div><span>{data.catalog.filter(idol=>idol.category==='male').length} hombres · {data.catalog.filter(idol=>idol.category==='female').length} mujeres</span></div>
     <div className="idol-toolbar"><label>Temporada<select className="league-field" value={seasonId} disabled={busy} onChange={e=>{setSeasonId(e.target.value);setStatus(null);setData(null);setSearch('');setView('ranking');}}><option value="">Temporada actual</option>{data.seasons.filter(s=>s.status==='archived').map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select></label><div className="category-tabs"><button className={'category-tab '+(view==='ranking'?'is-active':'')} onClick={()=>setView('ranking')}>Ranking</button><button className={'category-tab '+(view==='vote'?'is-active':'')} onClick={()=>{setView('vote');setSearch('');}}>Votar</button></div></div>
     {error && <p role="alert" className="text-red-300">{error} <button onClick={()=>void load()}>Reintentar</button></p>}
     {!data.season && <p className="league-panel">No hay una temporada activa. Puedes consultar las anteriores.</p>}

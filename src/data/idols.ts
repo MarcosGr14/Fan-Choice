@@ -931,5 +931,419 @@ export const IDOLS: Idol[] = [
     "name": "keshi",
     "group": "Solista",
     "category": "male"
+  },
+  {
+    "id": "ateez-hongjoong",
+    "name": "Hongjoong",
+    "group": "ATEEZ",
+    "category": "male"
+  },
+  {
+    "id": "ateez-seonghwa",
+    "name": "Seonghwa",
+    "group": "ATEEZ",
+    "category": "male"
+  },
+  {
+    "id": "ateez-yunho",
+    "name": "Yunho",
+    "group": "ATEEZ",
+    "category": "male"
+  },
+  {
+    "id": "ateez-yeosang",
+    "name": "Yeosang",
+    "group": "ATEEZ",
+    "category": "male"
+  },
+  {
+    "id": "ateez-san",
+    "name": "San",
+    "group": "ATEEZ",
+    "category": "male"
+  },
+  {
+    "id": "ateez-mingi",
+    "name": "Mingi",
+    "group": "ATEEZ",
+    "category": "male"
+  },
+  {
+    "id": "ateez-wooyoung",
+    "name": "Wooyoung",
+    "group": "ATEEZ",
+    "category": "male"
+  },
+  {
+    "id": "ateez-jongho",
+    "name": "Jongho",
+    "group": "ATEEZ",
+    "category": "male"
+  },
+  {
+    "id": "and-team-k",
+    "name": "K",
+    "group": "&TEAM",
+    "category": "male"
+  },
+  {
+    "id": "and-team-fuma",
+    "name": "Fuma",
+    "group": "&TEAM",
+    "category": "male"
+  },
+  {
+    "id": "and-team-nicholas",
+    "name": "Nicholas",
+    "group": "&TEAM",
+    "category": "male"
+  },
+  {
+    "id": "and-team-ej",
+    "name": "EJ",
+    "group": "&TEAM",
+    "category": "male"
+  },
+  {
+    "id": "and-team-yuma",
+    "name": "Yuma",
+    "group": "&TEAM",
+    "category": "male"
+  },
+  {
+    "id": "and-team-jo",
+    "name": "Jo",
+    "group": "&TEAM",
+    "category": "male"
+  },
+  {
+    "id": "and-team-harua",
+    "name": "Harua",
+    "group": "&TEAM",
+    "category": "male"
+  },
+  {
+    "id": "and-team-taki",
+    "name": "Taki",
+    "group": "&TEAM",
+    "category": "male"
+  },
+  {
+    "id": "and-team-maki",
+    "name": "Maki",
+    "group": "&TEAM",
+    "category": "male"
+  },
+  {
+    "id": "txt-soobin",
+    "name": "Soobin",
+    "group": "TOMORROW X TOGETHER (TXT)",
+    "category": "male"
+  },
+  {
+    "id": "txt-yeonjun",
+    "name": "Yeonjun",
+    "group": "TOMORROW X TOGETHER (TXT)",
+    "category": "male"
+  },
+  {
+    "id": "txt-beomgyu",
+    "name": "Beomgyu",
+    "group": "TOMORROW X TOGETHER (TXT)",
+    "category": "male"
+  },
+  {
+    "id": "txt-taehyun",
+    "name": "Taehyun",
+    "group": "TOMORROW X TOGETHER (TXT)",
+    "category": "male"
+  },
+  {
+    "id": "txt-huening-kai",
+    "name": "Huening Kai",
+    "group": "TOMORROW X TOGETHER (TXT)",
+    "category": "male"
+  },
+  {
+    "id": "blackpink-jisoo",
+    "name": "Jisoo",
+    "group": "BLACKPINK",
+    "category": "female"
+  },
+  {
+    "id": "blackpink-jennie",
+    "name": "Jennie",
+    "group": "BLACKPINK",
+    "category": "female"
+  },
+  {
+    "id": "blackpink-rose",
+    "name": "Rosé",
+    "group": "BLACKPINK",
+    "category": "female"
+  },
+  {
+    "id": "blackpink-lisa",
+    "name": "Lisa",
+    "group": "BLACKPINK",
+    "category": "female"
+  },
+  {
+    "id": "stray-kids-bang-chan",
+    "name": "Bang Chan",
+    "group": "Stray Kids",
+    "category": "male"
+  },
+  {
+    "id": "stray-kids-lee-know",
+    "name": "Lee Know",
+    "group": "Stray Kids",
+    "category": "male"
+  },
+  {
+    "id": "stray-kids-changbin",
+    "name": "Changbin",
+    "group": "Stray Kids",
+    "category": "male"
+  },
+  {
+    "id": "stray-kids-hyunjin",
+    "name": "Hyunjin",
+    "group": "Stray Kids",
+    "category": "male"
+  },
+  {
+    "id": "stray-kids-han",
+    "name": "Han",
+    "group": "Stray Kids",
+    "category": "male"
+  },
+  {
+    "id": "stray-kids-felix",
+    "name": "Felix",
+    "group": "Stray Kids",
+    "category": "male"
+  },
+  {
+    "id": "stray-kids-seungmin",
+    "name": "Seungmin",
+    "group": "Stray Kids",
+    "category": "male"
+  },
+  {
+    "id": "stray-kids-in",
+    "name": "I.N",
+    "group": "Stray Kids",
+    "category": "male"
+  },
+  {
+    "id": "cortis-martin",
+    "name": "Martin",
+    "group": "CORTIS",
+    "category": "male"
+  },
+  {
+    "id": "cortis-james",
+    "name": "James",
+    "group": "CORTIS",
+    "category": "male"
+  },
+  {
+    "id": "cortis-juhoon",
+    "name": "Juhoon",
+    "group": "CORTIS",
+    "category": "male"
+  },
+  {
+    "id": "cortis-seonghyeon",
+    "name": "Seonghyeon",
+    "group": "CORTIS",
+    "category": "male"
+  },
+  {
+    "id": "cortis-keonho",
+    "name": "Keonho",
+    "group": "CORTIS",
+    "category": "male"
+  },
+  {
+    "id": "wayv-kun",
+    "name": "Kun",
+    "group": "WayV",
+    "category": "male"
+  },
+  {
+    "id": "wayv-ten",
+    "name": "Ten",
+    "group": "WayV",
+    "category": "male"
+  },
+  {
+    "id": "wayv-winwin",
+    "name": "Winwin",
+    "group": "WayV",
+    "category": "male"
+  },
+  {
+    "id": "wayv-xiaojun",
+    "name": "Xiaojun",
+    "group": "WayV",
+    "category": "male"
+  },
+  {
+    "id": "wayv-hendery",
+    "name": "Hendery",
+    "group": "WayV",
+    "category": "male"
+  },
+  {
+    "id": "wayv-yangyang",
+    "name": "Yangyang",
+    "group": "WayV",
+    "category": "male"
+  },
+  {
+    "id": "got7-jay-b",
+    "name": "Jay B",
+    "group": "GOT7",
+    "category": "male"
+  },
+  {
+    "id": "got7-mark",
+    "name": "Mark",
+    "group": "GOT7",
+    "category": "male"
+  },
+  {
+    "id": "got7-jackson",
+    "name": "Jackson",
+    "group": "GOT7",
+    "category": "male"
+  },
+  {
+    "id": "got7-jinyoung",
+    "name": "Jinyoung",
+    "group": "GOT7",
+    "category": "male"
+  },
+  {
+    "id": "got7-youngjae",
+    "name": "Youngjae",
+    "group": "GOT7",
+    "category": "male"
+  },
+  {
+    "id": "got7-bambam",
+    "name": "BamBam",
+    "group": "GOT7",
+    "category": "male"
+  },
+  {
+    "id": "got7-yugyeom",
+    "name": "Yugyeom",
+    "group": "GOT7",
+    "category": "male"
+  },
+  {
+    "id": "monsta-x-shownu",
+    "name": "Shownu",
+    "group": "MONSTA X",
+    "category": "male"
+  },
+  {
+    "id": "monsta-x-minhyuk",
+    "name": "Minhyuk",
+    "group": "MONSTA X",
+    "category": "male"
+  },
+  {
+    "id": "monsta-x-kihyun",
+    "name": "Kihyun",
+    "group": "MONSTA X",
+    "category": "male"
+  },
+  {
+    "id": "monsta-x-hyungwon",
+    "name": "Hyungwon",
+    "group": "MONSTA X",
+    "category": "male"
+  },
+  {
+    "id": "monsta-x-joohoney",
+    "name": "Joohoney",
+    "group": "MONSTA X",
+    "category": "male"
+  },
+  {
+    "id": "monsta-x-im",
+    "name": "I.M",
+    "group": "MONSTA X",
+    "category": "male"
+  },
+  {
+    "id": "illit-yunah",
+    "name": "Yunah",
+    "group": "ILLIT",
+    "category": "female"
+  },
+  {
+    "id": "illit-minju",
+    "name": "Minju",
+    "group": "ILLIT",
+    "category": "female"
+  },
+  {
+    "id": "illit-moka",
+    "name": "Moka",
+    "group": "ILLIT",
+    "category": "female"
+  },
+  {
+    "id": "illit-wonhee",
+    "name": "Wonhee",
+    "group": "ILLIT",
+    "category": "female"
+  },
+  {
+    "id": "illit-iroha",
+    "name": "Iroha",
+    "group": "ILLIT",
+    "category": "female"
+  },
+  {
+    "id": "solista-jeon-somi",
+    "name": "Jeon Somi",
+    "group": "Solista",
+    "category": "female"
+  },
+  {
+    "id": "idle-miyeon",
+    "name": "Miyeon",
+    "group": "i-dle",
+    "category": "female"
+  },
+  {
+    "id": "idle-minnie",
+    "name": "Minnie",
+    "group": "i-dle",
+    "category": "female"
+  },
+  {
+    "id": "idle-soyeon",
+    "name": "Soyeon",
+    "group": "i-dle",
+    "category": "female"
+  },
+  {
+    "id": "idle-yuqi",
+    "name": "Yuqi",
+    "group": "i-dle",
+    "category": "female"
+  },
+  {
+    "id": "idle-shuhua",
+    "name": "Shuhua",
+    "group": "i-dle",
+    "category": "female"
   }
 ];

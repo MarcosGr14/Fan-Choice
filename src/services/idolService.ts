@@ -1,8 +1,12 @@
 import { IDOLS } from '../data/idols';
 import type { IdolRankings, IdolSubmission } from '../types/idols';
 
-export function rankIdols(submissions: IdolSubmission[], seasonId: string): IdolRankings {
-  const rows = IDOLS.map(idol => ({...idol, points:0, favoritePoints:0, votePoints:0, firstPlaces:0, rank:0}));
+export function rankIdols(submissions: IdolSubmission[], seasonId: string, onlySubmitted = false): IdolRankings {
+  const submittedIds = onlySubmitted
+    ? new Set(submissions.filter(submission => submission.seasonId === seasonId).flatMap(submission => submission.idolIds))
+    : null;
+  const rows = IDOLS.filter(idol => !submittedIds || submittedIds.has(idol.id))
+    .map(idol => ({...idol, points:0, favoritePoints:0, votePoints:0, firstPlaces:0, rank:0}));
   const byId = new Map(rows.map(row => [row.id,row]));
   for (const submission of submissions) {
     if (submission.seasonId !== seasonId) continue;
