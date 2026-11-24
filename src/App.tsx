@@ -1,9 +1,9 @@
 import React, { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
-import { Trophy, Music2, RefreshCw, LogOut, Lock, CalendarDays, Plus, CheckCircle2, Sun, Moon } from 'lucide-react';
+import { Trophy, LogOut, Lock, CalendarDays, Plus, CheckCircle2, Sun, Moon, Crown, ArrowRight, Sparkles, Users } from 'lucide-react';
 import { apiClient, ApiRequestError, type ApiResponse } from './services/apiClient';
 import { ErrorNotice, toUserError, type UserError } from './ErrorNotice';
 import type { Artist, ArtistCumulativeStats, ArchivedSeasonRecord, Category, Participant, Season } from './types';
-import type { IdolRankings } from './types/idols';
+import type { IdolOverview, IdolRankings, IdolStanding } from './types/idols';
 import { IdolPortrait } from './IdolPortrait';
 import type { LifetimeHistoryCache } from './LifetimeHistory';
 import { LoadingSkeleton } from './LoadingSkeleton';
@@ -34,7 +34,7 @@ async function unwrap<T>(request: Promise<ApiResponse<T>>): Promise<T> {
   return data;
 }
 function Ladder({title, rows}: {title: string; rows: ArtistCumulativeStats[]}) {
-  return <section className="ladder-section"><div className="section-heading"><h2>{title}</h2><span>Temporada · Top 10</span></div>
+  return <section className="ladder-section"><div className="section-heading"><h2>{title}</h2><span>Top 10</span></div>
     {!rows.length && <p className="league-panel text-neutral-400">Sin artistas en esta categoría.</p>}
     <ol className="ranking-list">
       {rows.slice(0,10).map((s,i) => <li key={s.artist.id} className={'artist-row '+(i<3?'podium-row ':'')+(i===0?'first-place':'')} style={{'--row-index':i} as React.CSSProperties}>
@@ -45,6 +45,24 @@ function Ladder({title, rows}: {title: string; rows: ArtistCumulativeStats[]}) {
         <div className="artist-total"><span>Total</span><strong>{s.cumulativePoints.toLocaleString('es')}</strong></div>
       </li>)}
     </ol></section>;
+}
+function HomeIdolLadder({title, rows}: {title: string; rows: IdolStanding[]}) {
+  const topTen = rows.slice(0,10);
+  return <section className="home-idol-board">
+    <div className="home-board-heading"><span className="home-board-kicker">Idols · Top 10</span><h3>{title}</h3><span className="home-live-tag"><i/> Clasificación actual</span></div>
+    {!topTen.length ? <p className="home-empty">Todavía no hay idols en esta categoría.</p> : <ol className="home-idol-list">
+      {topTen.map((idol,index)=><li key={idol.id} className={index===0?'home-idol-row home-idol-first':'home-idol-row'} style={{'--row-index':index} as React.CSSProperties}>
+        <span className="home-rank-number">{String(index+1).padStart(2,'0')}</span><IdolPortrait idol={idol} priority={index<3}/><div className="home-idol-name"><strong>{idol.name}</strong><span>{idol.group}</span></div><strong className="home-idol-points">{idol.points.toLocaleString('es')}<small> pts</small></strong>
+      </li>)}
+    </ol>}
+  </section>;
+}
+function IdolWinnerCard({category, winner}: {category: Category; winner?: IdolStanding}) {
+  const hasWinner = !!winner && winner.points > 0;
+  return <article className={'idol-winner-card '+(category==='female'?'idol-winner-female':'idol-winner-male')}>
+    <p className="winner-card-label"><Crown size={14}/>{category==='male'?'Idol #1 · Hombres':'Idol #1 · Mujeres'}</p>
+    <div className="idol-winner-body">{hasWinner && <IdolPortrait idol={winner!} priority large/>}<div><strong>{hasWinner?winner!.name:'Esperando votos'}</strong><span>{hasWinner?winner!.group:'La votación definirá el primer lugar'}</span>{hasWinner && <b>{winner!.points.toLocaleString('es')} <small>puntos</small></b>}</div></div>
+  </article>;
 }
 function CategoryRankings({maleRows, femaleRows}: {maleRows: ArtistCumulativeStats[]; femaleRows: ArtistCumulativeStats[]}) {
   const [visibleCategory, setVisibleCategory] = useState<Category>('male');
@@ -89,6 +107,8 @@ export function App() {
   // Memory-only history cache; discard it whenever the signed-in participant changes.
   const historyCache = useMemo<LifetimeHistoryCache>(() => ({ data: null, loaded: false }), [user?.id]);
   const [overview,setOverview] = useState<Overview | null>(null);
+  const [idolOverview,setIdolOverview] = useState<IdolOverview | null>(null);
+  const [idolOverviewError,setIdolOverviewError] = useState<UserError | null>(null);
   const [artists,setArtists] = useState<Artist[]>([]);
   const [archives,setArchives] = useState<ArchiveSummary[]>([]);
   const [archivesLoaded,setArchivesLoaded] = useState(false);
@@ -122,6 +142,12 @@ export function App() {
     ]);
     setOverview(o);if(c)setArtists(c.artists);
   }
+  async function refreshIdolOverview() {
+    try {
+      const data = await unwrap(apiClient.request<IdolOverview>('/idols'));
+      setIdolOverview(data);setIdolOverviewError(null);
+    } catch(e) { setIdolOverviewError(toUserError(e)); }
+  }
   async function refreshArchives() {
     const a = await unwrap(apiClient.getArchivedSeasons());
     setArchives(a.seasons);setArchivesLoaded(true);
@@ -139,6 +165,7 @@ export function App() {
       setDate(localDate());
       refreshCycle.current+=1;
       void refresh(refreshCycle.current%5===0).catch(e=>setError(toUserError(e)));
+      if(refreshCycle.current%5===0) void refreshIdolOverview();
     },60000);
     return () => {active=false;clearInterval(interval);};
   },[]);
@@ -156,7 +183,7 @@ export function App() {
   },[votes?.competitionDate,votes?.maleBallot.status,votes?.maleBallot.items,votes?.femaleBallot.status,votes?.femaleBallot.items,date]);
   useEffect(() => {
     // Existing standings stay visible while a returning view refreshes.
-    if (tab==='rankings') void refresh().catch(e=>setError(toUserError(e)));
+    if (tab==='rankings') { void refresh().catch(e=>setError(toUserError(e))); void refreshIdolOverview(); }
     if (tab==='archive') void refreshArchives().catch(e=>setError(toUserError(e)));
   }, [tab]);
   async function action(work: () => Promise<void>) {
@@ -199,17 +226,24 @@ export function App() {
       <nav className="site-nav">{[['rankings','Clasificación'],['voting','Votar'],['periodic','Mega Voto'],['idols','Idols'],['history','Histórico'],['archive','Archivo'],...(user?.role==='admin'?[['admin','Administración']]:[])].map(([id,label])=><button key={id} onClick={()=>setTab(id)} className={tab===id?'nav-tab is-active':'nav-tab'}>{label}</button>)}</nav>
       <div className="header-actions"><button className="theme-toggle" type="button" aria-label={theme==='dark'?'Activar modo claro':'Activar modo oscuro'} title={theme==='dark'?'Modo claro':'Modo oscuro'} onClick={()=>setTheme(theme==='dark'?'light':'dark')}>{theme==='dark'?<Sun size={18}/>:<Moon size={18}/>}</button>{user ? <div className="flex items-center gap-3 text-sm"><span>{user.displayName}</span><button className="logout-button" aria-label="Salir" onClick={()=>{apiClient.setToken(null);setUser(null);setVotes(null);setTab('rankings');setNotice('Sesión cerrada.');}}><LogOut size={18}/> Salir</button></div> : <button className={button} onClick={()=>setShowLogin(true)}>Entrar</button>}</div>
     </div></header>
-    <main className="page-content space-y-7">
+    <main className={'page-content space-y-7 '+(tab==='rankings'?'rankings-home':'')}>
       {error && <ErrorNotice error={error} onRetry={()=>void action(tab==='archive'?refreshArchives:()=>refresh(artists.length===0))} onDismiss={()=>setError(null)}/>}
       {notice && <p role="status" className="rounded-xl border border-emerald-800 bg-emerald-950/40 p-4 flex items-center gap-2"><CheckCircle2 size={18}/>{notice}</p>}
       {!overview && tab==='rankings' && !error && <LoadingSkeleton hero/>}
       {tab==='rankings' && overview && <>
-      <section className="season-hero"><img src={hero} alt="" loading="eager" fetchPriority="high" decoding="async" width={1376} height={768} className="hero-image"/><div className="hero-content"><p className="eyebrow">Fan Choice Most Populars <span> / </span> Temporada</p><h1>{season ? season.name : 'Entre temporadas'}</h1><p className="hero-caption">{season ? `Desde ${season.startDate} · Día ${season.daysActive}` : 'Próxima temporada pendiente'}</p><button className={button+' mt-6'} onClick={()=>setTab('voting')}>Elegir mi Top 5 <span aria-hidden="true">↗</span></button></div><span className="hero-watermark" aria-hidden="true">FAN<br/>CHOICE</span></section>
-        <div className="overview-grid"><section className="champion-card">
-          <div className="champion-photo"><span className="photo-initials" aria-hidden="true">{season && champion && champion.cumulativePoints>0 ? champion.artist.displayName.split(' ').map(word=>word[0]).slice(0,2).join('') : 'FC'}</span>{season && champion && champion.cumulativePoints>0 && champion.artist.imageUrl && <img src={champion.artist.imageUrl.replace('ab6761610000e5eb','ab6761610000f178')} alt={champion.artist.displayName} loading="eager" decoding="async" width={108} height={108} onError={e=>{if(e.currentTarget.getAttribute('src')!==champion.artist.imageUrl){e.currentTarget.src=champion.artist.imageUrl!;}else{e.currentTarget.style.display='none';}}}/>}</div>
-          <div className="champion-info"><p className="eyebrow"><Trophy size={14}/> Campeón absoluto</p><h2>{season && champion && champion.cumulativePoints>0 ? champion.artist.displayName : 'Esperando puntos'}</h2><p className="champion-score">{season ? champion?.cumulativePoints || 0 : 0}<span>Total</span></p></div>
-        </section><section className={card+' overview-stat'}><Music2/><p>Artistas</p><h2>{artists.length}</h2><span>K-pop · J-pop</span></section><section className={card+' overview-sync'}><RefreshCw/><p>Última sincronización</p><strong>{overview.syncStatus.totalRecords || overview.syncStatus.status==='success' ? time(overview.syncStatus.lastSyncTimestamp) : 'Pendiente de importación'}</strong><span>{overview.syncStatus.isMockProvider?'Demostración':'Spotify Duo Charts'} · {{success:'Actualizada',failed:'Error',partial:'Pendiente'}[overview.syncStatus.status] || overview.syncStatus.status}</span></section></div>
-        {season && <CategoryRankings maleRows={overview.standings.maleStats} femaleRows={overview.standings.femaleStats}/>}
+      <section className="season-hero season-hero-premium"><img src={hero} alt="" loading="eager" fetchPriority="high" decoding="async" width={1376} height={768} className="hero-image"/><div className="hero-content"><p className="eyebrow"><Sparkles size={14}/> Fan Choice · Music Awards</p><h1>Fan Choice <span>Awards</span></h1><p className="hero-season-name">{season?.name || 'Entre temporadas'}</p><p className="hero-caption">{season ? `Desde ${season.startDate} · Día ${season.daysActive}` : 'Próxima temporada pendiente'} · K-pop & J-pop</p><div className="hero-actions"><button className={button} onClick={()=>setTab('voting')}>Votar ahora <ArrowRight size={16}/></button><button className="hero-secondary-action" onClick={()=>setTab('idols')}>Explorar idols</button></div></div><div className="hero-side-note"><div className="season-seal"><span>SEASON</span><strong>02</strong><span>{season?.status==='active'?'EN VIVO':'AWARDS'}</span></div><div className="hero-stat"><Users size={17}/><span><strong>{artists.length}</strong> artistas</span></div></div><span className="hero-watermark" aria-hidden="true">FC</span><div className="hero-bottomline"><span><i/> {season?.status==='active'?'Temporada activa · en vivo':'Ranking de temporada'}</span><span>Panamá · K-pop · J-pop</span></div></section>
+        <section className="winner-stage"><div className="home-section-heading winner-section-heading"><div><p className="home-section-kicker">La cima de la temporada</p><h2>Los líderes</h2></div><span>Actualización automática</span></div><div className="winner-grid">
+          <article className="winner-card winner-overall"><div className="winner-card-art"><span>01</span><div className="winner-orbit"/></div><div className="winner-overall-copy"><p className="winner-card-label"><Trophy size={14}/> Campeón absoluto · Artistas</p><div className="winner-main-identity"><div className="champion-photo"><span className="photo-initials" aria-hidden="true">{season && champion && champion.cumulativePoints>0 ? champion.artist.displayName.split(' ').map(word=>word[0]).slice(0,2).join('') : 'FC'}</span>{season && champion && champion.cumulativePoints>0 && champion.artist.imageUrl && <img src={champion.artist.imageUrl.replace('ab6761610000e5eb','ab6761610000f178')} alt={champion.artist.displayName} loading="eager" decoding="async" width={108} height={108} onError={e=>{if(e.currentTarget.getAttribute('src')!==champion.artist.imageUrl){e.currentTarget.src=champion.artist.imageUrl!;}else{e.currentTarget.style.display='none';}}}/>}</div><div className="champion-info"><h3>{season && champion && champion.cumulativePoints>0 ? champion.artist.displayName : 'Aún sin ganador'}</h3><p className="winner-category">{season && champion?.cumulativePoints ? (champion.artist.artistType==='group'?'Grupo':'Solista')+' · '+(champion.artist.category==='male'?'Categoría hombres':'Categoría mujeres') : 'Los votos definirán al campeón absoluto'}</p></div></div><div className="winner-scoreline"><strong>{season ? champion?.cumulativePoints || 0 : 0}</strong><span>puntos acumulados</span></div></div></article>
+          <IdolWinnerCard category="male" winner={idolOverview?.rankings.male[0]}/><IdolWinnerCard category="female" winner={idolOverview?.rankings.female[0]}/>
+        </div></section>
+        <section className="home-rankings-section"><div className="home-section-heading"><div><p className="home-section-kicker">La competencia</p><h2>Ranking de artistas</h2><p>Las categorías de hombres y mujeres compiten por separado. El campeón absoluto reúne la puntuación más alta entre ambas.</p></div><span className="home-top-ten-tag">Top 10 por categoría</span></div><div className="home-ranking-grid">
+          <div className="home-board-wrap home-board-male"><Ladder title="Hombres" rows={overview.standings.maleStats}/></div><div className="home-board-wrap home-board-female"><Ladder title="Mujeres" rows={overview.standings.femaleStats}/></div>
+        </div></section>
+        <section className="home-rankings-section home-idol-section"><div className="home-section-heading"><div><p className="home-section-kicker">Votos de la comunidad</p><h2>Idols favoritos</h2><p>Clasificaciones individuales con un top 10 independiente para cada categoría.</p></div><button className="home-link-button" onClick={()=>setTab('idols')}>Ver sección de idols <ArrowRight size={15}/></button></div>
+          {idolOverviewError && !idolOverview && <div className="home-idol-error"><span>No se pudo cargar el ranking de idols.</span><button onClick={()=>void refreshIdolOverview()}>Reintentar</button><small>{idolOverviewError.code}</small></div>}
+          {!idolOverview && !idolOverviewError && <div className="home-idol-loading" role="status">Cargando los rankings de idols…</div>}
+          {idolOverview && <div className="home-ranking-grid"><HomeIdolLadder title="Hombres" rows={idolOverview.rankings.male}/><HomeIdolLadder title="Mujeres" rows={idolOverview.rankings.female}/></div>}
+        </section>
       </>}
       {tab==='idols' && <Suspense fallback={<LoadingSkeleton/>}><IdolLeague key={user?.id || 'public'} user={user} onLogin={()=>setShowLogin(true)}/></Suspense>}
       {tab==='periodic' && <Suspense fallback={<LoadingSkeleton/>}><PeriodicVoting key={user?.id||'public'} user={user} onLogin={()=>setShowLogin(true)}/></Suspense>}
