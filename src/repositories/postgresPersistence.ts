@@ -1,4 +1,4 @@
-import type { IdolSubmission } from '../types/idols';
+import type { IdolSubmission, PeriodicSubmission } from '../types/idols';
 // ==============================================================================
 // K-POP / J-POP RANKINGS LEAGUE: CAPA DE PERSISTENCIA EN POSTGRES (SUPABASE)
 // ==============================================================================
@@ -86,6 +86,18 @@ export class PostgresPersistence {
   async saveIdolSubmission(s: IdolSubmission) {
     await this.pool.query('INSERT INTO idol_submissions (season_id,participant_id,kind,category,competition_date,idol_ids) VALUES ($1,$2,$3,$4,$5,$6)',
       [s.seasonId,s.participantId,s.kind,s.category,s.competitionDate,JSON.stringify(s.idolIds)]);
+  }
+
+  async loadPeriodicSubmissions(): Promise<PeriodicSubmission[]> {
+    try {
+      const { rows } = await this.pool.query('SELECT season_id,participant_id,kind,period_key,submitted_date,selections,created_at FROM periodic_submissions');
+      return rows.map(r=>({seasonId:r.season_id,participantId:r.participant_id,kind:r.kind,periodKey:r.period_key,submittedDate:r.submitted_date,selections:r.selections,createdAt:isoOrUndefined(r.created_at)}));
+    } catch (error: any) { if(error.code==='42P01') return []; throw error; }
+  }
+
+  async savePeriodicSubmission(s: PeriodicSubmission) {
+    await this.pool.query('INSERT INTO periodic_submissions (season_id,participant_id,kind,period_key,submitted_date,selections) VALUES ($1,$2,$3,$4,$5,$6)',
+      [s.seasonId,s.participantId,s.kind,s.periodKey,s.submittedDate,JSON.stringify(s.selections)]);
   }
 
   async loadArchives(): Promise<ArchivedSeasonRecord[]> {

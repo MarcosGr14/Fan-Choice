@@ -47,6 +47,6 @@ export async function getArchivedSeasonDetails(req: Request, res: Response) {
     // from the original submissions without mutating or rewriting the archive.
     archive: record.idolRankings
       ? record
-      : { ...record, idolRankings: rankIdols(leagueStore.idolSubmissions, record.season.id, true) },
+      : { ...record, idolRankings: rankIdols(leagueStore.idolSubmissions, record.season.id, true, leagueStore.periodicSubmissions) },
   });
 }

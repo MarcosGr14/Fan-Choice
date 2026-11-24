@@ -9,7 +9,7 @@ export function IdolPortrait({ idol, priority = false, large = false }: {
   return <span className={'idol-portrait' + (large ? ' idol-portrait-large' : '')} aria-hidden="true">
     <span>{idol.name.split(/\s+/).map(part => part[0]).slice(0, 2).join('')}</span>
     {failedSource !== src && <img src={src} alt="" width={large ? 144 : 72} height={large ? 144 : 72}
-      loading={priority ? 'eager' : 'lazy'} decoding="async"
+      loading={priority ? 'eager' : 'lazy'} decoding="async" fetchPriority={priority ? 'high' : 'low'}
       onError={() => setFailedSource(src)} />}
   </span>;
 }

@@ -87,11 +87,11 @@ export async function closeSeason(req: AuthenticatedRequest, res: Response) {
       adminDisplayName: req.user?.displayName || 'Admin',
       maleStats: standings.maleStats,
       femaleStats: standings.femaleStats,
-      totalVotesCast: [...leagueStore.ballots.values()].filter(b => b.seasonId === season.id).reduce((n,b) => n + b.items.length, 0),
+      totalVotesCast: [...leagueStore.ballots.values()].filter(b => b.seasonId === season.id).reduce((n,b) => n + b.items.length, 0) + leagueStore.periodicSubmissions.filter(v=>v.seasonId===season.id).reduce((n,v)=>n+v.selections.male.length+v.selections.female.length,0),
       totalStreamsLogged: [...standings.maleStats, ...standings.femaleStats].reduce((n,s) => n + s.cumulativeStreams, 0),
     });
 
-    closure.archivedRecord.idolRankings = rankIdols(leagueStore.idolSubmissions, season.id);
+    closure.archivedRecord.idolRankings = rankIdols(leagueStore.idolSubmissions, season.id, false, leagueStore.periodicSubmissions);
 
     // Update in-memory store
     await leagueStore.archiveSeasonPersisted(closure.archivedRecord, closure.frozenResults);

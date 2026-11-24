@@ -1,4 +1,5 @@
-import type { IdolSubmission } from '../types/idols';
+import type { IdolSubmission, PeriodicSubmission } from '../types/idols';
+import { periodicPoints } from '../services/periodicVoting';
 // ==============================================================================
 // K-POP / J-POP RANKINGS LEAGUE: PERSISTENT STATE REPOSITORY STORE
 // ==============================================================================
@@ -36,6 +37,7 @@ import { PostgresPersistence } from './postgresPersistence';
 
 export class LeagueStore {
   public idolSubmissions: IdolSubmission[] = [];
+  public periodicSubmissions: PeriodicSubmission[] = [];
   public participants: Map<string, Participant & { passwordHash: string }> = new Map();
   public artists: Map<string, Artist> = new Map();
   public seasons: Map<string, Season> = new Map();
@@ -124,6 +126,7 @@ export class LeagueStore {
       const archives = await persistence.loadArchives();
       const idolSubmissions = await persistence.loadIdolSubmissions();
       this.idolSubmissions = idolSubmissions;
+      this.periodicSubmissions = await persistence.loadPeriodicSubmissions();
 
       // Reemplazar por completo el estado de ejemplo
       this.participants.clear();
@@ -189,6 +192,11 @@ export class LeagueStore {
   async saveIdolSubmission(submission: IdolSubmission) {
     if (this.persistence) await this.persistence.saveIdolSubmission(submission);
     this.idolSubmissions.push(submission);
+  }
+
+  async savePeriodicSubmission(submission: PeriodicSubmission) {
+    if (this.persistence) await this.persistence.savePeriodicSubmission(submission);
+    this.periodicSubmissions.push(submission);
   }
 
   async createSeasonPersisted(season: Season) {
@@ -443,6 +451,16 @@ export class LeagueStore {
           stats.todayVotePoints = score.votePoints;
           stats.todayListeningBonus = score.listeningBonus;
           stats.todayStreams = score.dailyStreams;
+        }
+      }
+    }
+
+    // Periodic votes add season points while keeping listening and daily ballot history intact.
+    if (activeSeason) for (const kind of ['weekly_artists','monthly_artists'] as const) {
+      for (const category of ['male','female'] as const) {
+        const ids=Array.from(statsMap.values()).filter(s=>s.artist.category===category).map(s=>s.artist.id);
+        for (const {id,points} of periodicPoints(this.periodicSubmissions,activeSeason.id,kind,ids,category,undefined,endDate)) {
+          const stats=statsMap.get(id); if(stats&&points){stats.cumulativePoints+=points;stats.cumulativeVotePoints+=points;}
         }
       }
     }

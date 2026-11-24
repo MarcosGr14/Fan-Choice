@@ -3,6 +3,7 @@ import { apiClient } from './services/apiClient';
 import type { LifetimeSnapshot } from './services/lifetimeService';
 import type { Artist } from './types';
 import { LoadingSkeleton } from './LoadingSkeleton';
+import { ErrorNotice, toUserError, userErrorFromResponse, type UserError } from './ErrorNotice';
 type HistoryData = {snapshot:LifetimeSnapshot;fetchedAt:string};
 export type LifetimeHistoryCache = {data: HistoryData | null; loaded: boolean};
 const format = (n: number) => n.toLocaleString('es');
@@ -13,8 +14,9 @@ export function LifetimeHistory({artists, isAdmin, cache}: {artists:Artist[]; is
   const [loaded,setLoaded]=useState(cache.loaded);
   const mounted=useRef(false);
   const requestVersion=useRef(0);
-  const [error,setError]=useState('');
+  const [error,setError]=useState<UserError|null>(null);
   const [busy,setBusy]=useState(false);
+  const syncLock=useRef(false);
   const [query,setQuery]=useState('');
   const [limit,setLimit]=useState(50);
   async function refresh() {
@@ -22,22 +24,25 @@ export function LifetimeHistory({artists, isAdmin, cache}: {artists:Artist[]; is
     const result=await apiClient.request<HistoryData & {available:boolean}>('/league/listening-history');
     // Ignore responses belonging to an unmounted view or an older refresh.
     if(!mounted.current || version!==requestVersion.current) return;
-    if(result.error || !result.data){setError(result.error || 'No se pudo actualizar el histórico.');setLoaded(true);return;}
+    if(result.error || !result.data){setError(userErrorFromResponse(result.error,result.errorCode,'No se pudo actualizar el histórico.'));setLoaded(true);return;}
     const next=result.data.available ? result.data : null;
     cache.data=next;cache.loaded=true;
-    setData(next);setLoaded(true);setError('');
+    setData(next);setLoaded(true);setError(null);
   }
   useEffect(()=>{
     mounted.current=true;
     void refresh();
-    const timer=setInterval(()=>void refresh(),60000);
+    const timer=setInterval(()=>{if(document.visibilityState==='visible')void refresh();},60000);
     return()=>{mounted.current=false;requestVersion.current++;clearInterval(timer);};
   },[cache]);
   async function sync() {
-    setBusy(true);setError('');
-    const result=await apiClient.request('/admin/sync/history',{method:'POST',body:'{}'});
-    if(result.error) setError(result.error); else await refresh();
-    setBusy(false);
+    if(syncLock.current)return;
+    syncLock.current=true;setBusy(true);setError(null);
+    try {
+      const result=await apiClient.request('/admin/sync/history',{method:'POST',body:'{}'});
+      if(result.error) setError(userErrorFromResponse(result.error,result.errorCode)); else await refresh();
+    } catch(e) {setError(toUserError(e));}
+    finally {syncLock.current=false;setBusy(false);}
   }
   const ids=new Set(artists.filter(a=>a.isEligible&&a.status==='approved').map(a=>a.spotifyArtistId));
   const rows=data?.snapshot.records.filter(r=>ids.has(r.spotify_artist_id)&&r.artist_name.toLowerCase().includes(query.toLowerCase())).sort((a,b)=>b.combined_streams-a.combined_streams||a.artist_name.localeCompare(b.artist_name)) || [];
@@ -45,7 +50,7 @@ export function LifetimeHistory({artists, isAdmin, cache}: {artists:Artist[]; is
   const a2=data?.snapshot.accounts[1]?.nombre_display || 'Cuenta 2';
   return <section className="space-y-6">
     <div className="flex flex-wrap justify-between gap-4 items-center"><div><p className="text-emerald-300 uppercase tracking-widest text-xs mb-2">Duo Spotify Charts</p><h1 className="text-3xl font-bold">Reproducciones del año</h1><p className="text-neutral-400 mt-3">Streams del catálogo · MAMA LATINO 2026</p></div>{isAdmin&&<button disabled={busy} className="league-button" onClick={()=>void sync()}>{busy?'Actualizando…':'Actualizar histórico'}</button>}</div>
-    {error&&<p role="alert" className="border border-red-800 bg-red-950/30 rounded-xl p-4">{error} <button className="underline" onClick={()=>void refresh()}>Reintentar</button></p>}
+    {error&&<ErrorNotice error={error} onRetry={()=>void refresh()} onDismiss={()=>setError(null)}/>}
     {!data && (!loaded ? <LoadingSkeleton/> : <p className={card}>Todavía no hay una importación histórica disponible. Se cargará con la siguiente sincronización del servidor.</p>)}
     {data&&<>
       {Date.now()-Date.parse(data.fetchedAt)>30*60*1000&&<p className="text-amber-300" role="status">Se muestra la última copia guardada; la actualización está pendiente.</p>}

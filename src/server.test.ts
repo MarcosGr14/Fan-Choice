@@ -92,6 +92,48 @@ export async function runApiIntegrationTests(): Promise<{ passed: number; failed
     const catalog = await catalogRes.json();
     assert(catalog.total >= 24, 'Artists catalog must contain at least 24 artists');
 
+    // Periodic vote API: authentication, catalog, validation, persistence and one-vote rule.
+    const periodicPublicRes=await fetch(`${baseUrl}/api/v1/periodic`);
+    assert(periodicPublicRes.status===200,'Periodic catalog is public');
+    const periodicCatalog=await periodicPublicRes.json();
+    assert(periodicCatalog.periods.weekly_artists===periodicCatalog.periods.weekly_idols,'Weekly categories share one Monday period');
+    const periodicNoAuth=await fetch(`${baseUrl}/api/v1/periodic/me`);
+    assert(periodicNoAuth.status===401,'Periodic personal status requires authentication');
+    const maleArtists=periodicCatalog.artists.filter((a:any)=>a.category==='male'&&a.artistType==='group').slice(0,10).map((a:any)=>a.id);
+    const femaleArtists=periodicCatalog.artists.filter((a:any)=>a.category==='female'&&a.artistType==='group').slice(0,10).map((a:any)=>a.id);
+    const maleIdols=periodicCatalog.idols.filter((a:any)=>a.category==='male').slice(0,10).map((a:any)=>a.id);
+    const femaleIdols=periodicCatalog.idols.filter((a:any)=>a.category==='female').slice(0,10).map((a:any)=>a.id);
+    const weeklyArtistBody={kind:'weekly_artists',seasonId:periodicCatalog.season.id,periodKey:periodicCatalog.periods.weekly_artists,selections:{male:maleArtists,female:femaleArtists}};
+    const invalidPeriodic=await fetch(`${baseUrl}/api/v1/periodic/votes`,{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${adminToken}`},body:JSON.stringify({...weeklyArtistBody,selections:{male:maleArtists.slice(0,9),female:femaleArtists}})});
+    assert(invalidPeriodic.status===400,'Periodic API rejects incomplete Top 10');
+    const validPeriodic=await fetch(`${baseUrl}/api/v1/periodic/votes`,{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${adminToken}`},body:JSON.stringify(weeklyArtistBody)});
+    assert(validPeriodic.status===201,'Periodic API records a valid weekly artist ballot');
+    const refreshedStandings=await (await fetch(`${baseUrl}/api/v1/league/overview`)).json();
+    const newlyScored=refreshedStandings.standings.maleStats.find((row:any)=>row.artist.id===maleArtists[0]);
+    const baselineArtist=overview.standings.maleStats.find((row:any)=>row.artist.id===maleArtists[0]);
+    assert(newlyScored.cumulativePoints===baselineArtist.cumulativePoints+25,'Weekly artist first-place points enter the season standings');
+    const duplicatePeriodic=await fetch(`${baseUrl}/api/v1/periodic/votes`,{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${adminToken}`},body:JSON.stringify(weeklyArtistBody)});
+    assert(duplicatePeriodic.status===409,'Periodic API prevents a second vote in the same period');
+    const myPeriodic=await fetch(`${baseUrl}/api/v1/periodic/me`,{headers:{Authorization:`Bearer ${adminToken}`}});
+    assert((await myPeriodic.json()).periods.weekly_artists.submission!==null,'Personal periodic status returns saved selections');
+    const weeklyIdolBody={kind:'weekly_idols',seasonId:periodicCatalog.season.id,periodKey:periodicCatalog.periods.weekly_idols,selections:{male:maleIdols,female:femaleIdols}};
+    const validWeeklyIdols=await fetch(`${baseUrl}/api/v1/periodic/votes`,{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${samToken}`},body:JSON.stringify(weeklyIdolBody)});
+    assert(validWeeklyIdols.status===201,'Periodic API records a valid weekly idol ballot');
+    const monthlyIdolBody={kind:'monthly_idols',seasonId:periodicCatalog.season.id,periodKey:periodicCatalog.periods.monthly_idols,selections:{male:maleIdols.slice(0,2),female:femaleIdols.slice(0,2)}};
+    const validMonthlyIdols=await fetch(`${baseUrl}/api/v1/periodic/votes`,{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${samToken}`},body:JSON.stringify(monthlyIdolBody)});
+    assert(validMonthlyIdols.status===201,'Periodic API records bias and bias-wrecker selections');
+    const monthlyArtistBody={kind:'monthly_artists',seasonId:periodicCatalog.season.id,periodKey:periodicCatalog.periods.monthly_artists,selections:{male:maleArtists.slice(0,1),female:femaleArtists.slice(0,1)}};
+    const validMonthlyArtists=await fetch(`${baseUrl}/api/v1/periodic/votes`,{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${adminToken}`},body:JSON.stringify(monthlyArtistBody)});
+    assert(validMonthlyArtists.status===201,'Periodic API records monthly artist favorites');
+    const afterMonthlyStandings=await (await fetch(`${baseUrl}/api/v1/league/overview`)).json();
+    const totalSpecial=afterMonthlyStandings.standings.maleStats.find((row:any)=>row.artist.id===maleArtists[0]).cumulativePoints-baselineArtist.cumulativePoints;
+    assert(totalSpecial===75,'Weekly and monthly artist points add to season totals');
+    const leaderboard=await (await fetch(`${baseUrl}/api/v1/periodic`)).json();
+    assert(leaderboard.results.weekly_artists.male.length>0,'Periodic results show the current vote leaderboard');
+    assert(leaderboard.results.weekly_idols.male[0].points===50,'Weekly idol winner receives 50 points');
+    const idolRankings=await (await fetch(`${baseUrl}/api/v1/idols`)).json();
+    assert(idolRankings.rankings.female.some((row:any)=>row.periodicPoints===125),'Monthly bias combines 75 monthly points with the 50-point weekly idol win');
+
     // 8. Votes Today Status
     const votesRes = await fetch(`${baseUrl}/api/v1/votes/today`, {
       headers: { Authorization: `Bearer ${adminToken}` },

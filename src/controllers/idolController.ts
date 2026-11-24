@@ -12,7 +12,7 @@ export function overview(req: Request, res: Response) {
   res.setHeader('Cache-Control','no-store');
   return res.json({season:season || null, catalog:IDOLS, competitionDate:today(),
     seasons:leagueStore.getAllSeasons().filter(s=>s.status !== 'draft'),
-    rankings:frozen || rankIdols(leagueStore.idolSubmissions,season?.id || '',season?.status==='archived')});
+    rankings:frozen || rankIdols(leagueStore.idolSubmissions,season?.id || '',season?.status==='archived',leagueStore.periodicSubmissions)});
 }
 export function status(req: AuthenticatedRequest, res: Response) {
   const season = leagueStore.getActiveSeason();
