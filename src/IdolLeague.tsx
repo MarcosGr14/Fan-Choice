@@ -27,7 +27,9 @@ export default function IdolLeague({user,onLogin}: {user: Participant | null; on
   const [error,setError] = useState<UserError | null>(null);
   const [confirmed,setConfirmed] = useState<Category | null>(null);
   const [confirmFavorites,setConfirmFavorites] = useState(false);
+  const [confirmDaily,setConfirmDaily] = useState(false);
   const favoriteDialog = useRef<HTMLDialogElement>(null);
+  const dailyDialog = useRef<HTMLDialogElement>(null);
   const saveLock = useRef(false);
   const generation = useRef(0);
   async function load() {
@@ -48,7 +50,16 @@ export default function IdolLeague({user,onLogin}: {user: Participant | null; on
   },[seasonId,user?.id]);
   useEffect(()=>{setPicks({male:[],female:[]});setFavorites([]);setConfirmed(null);},[status?.seasonId,status?.competitionDate]);
   useEffect(()=>{if(status?.seasonId && status.favorites===null && !seasonId) setView('vote');},[status?.seasonId,seasonId]);
-  useEffect(()=>{if(confirmFavorites) favoriteDialog.current?.showModal();},[confirmFavorites]);
+  useEffect(()=>{
+    const dialog=favoriteDialog.current;
+    if(confirmFavorites && dialog && !dialog.open) dialog.showModal();
+    if(!confirmFavorites && dialog?.open) dialog.close();
+  },[confirmFavorites]);
+  useEffect(()=>{
+    const dialog=dailyDialog.current;
+    if(confirmDaily && dialog && !dialog.open) dialog.showModal();
+    if(!confirmDaily && dialog?.open) dialog.close();
+  },[confirmDaily]);
   if (!data) return <>{error ? <ErrorNotice error={error} onRetry={()=>void load()}/> : <LoadingSkeleton/>}</>;
   const active = data.season?.status==='active' && data.season.startDate<=currentDate();
   const ready = !!user && active && status?.seasonId===data.season?.id && status?.competitionDate===currentDate();
@@ -65,7 +76,7 @@ export default function IdolLeague({user,onLogin}: {user: Participant | null; on
       await request('/idols/votes',{method:'POST',body:JSON.stringify({kind,category:kind==='favorites'?'all':target,idolIds:kind==='favorites'?favorites:selection,seasonId:data!.season!.id,competitionDate:status!.competitionDate})});
       setStatus(previous=>previous ? {...previous,...(kind==='favorites'?{favorites:[...favorites]}:{[target]:[...selection]})}:previous);
       setConfirmFavorites(false);
-      if(kind==='daily') setConfirmed(target);
+      if(kind==='daily') { setConfirmDaily(false); setConfirmed(target); }
       void load();
     } catch(e) {setError(toUserError(e));} finally {saveLock.current=false;setBusy(false);}
   }
@@ -100,10 +111,15 @@ export default function IdolLeague({user,onLogin}: {user: Participant | null; on
         <input type="search" className="league-field" placeholder="Buscar idol o grupo" aria-label="Buscar idol o grupo" value={search} onChange={e=>setSearch(e.target.value)}/>
         <div className="idol-picker">{catalog.map(idol=>{const selected=(onboarding?favorites:selection).includes(idol.id);return <button key={idol.id} type="button" aria-pressed={selected} disabled={busy || (!onboarding && selection.length===10 && !selected)} className={selected?'selected':''} onClick={()=>toggle(idol.id)}><IdolPortrait idol={idol}/><span><strong>{idol.name}</strong><small>{idol.group} · {idol.category==='male'?'Hombres':'Mujeres'}</small></span><b>{selected?(onboarding?'✓':selection.indexOf(idol.id)+1):'+'}</b></button>;})}</div>
         {!catalog.length && <p>No hay coincidencias.</p>}
-        <div className="idol-save"><span>{onboarding?`${favorites.length} favoritos`:`${selection.length} / 10`}</span><button className="league-button" disabled={busy || (!onboarding && selection.length!==10)} onClick={()=>onboarding?setConfirmFavorites(true):void save('daily')}>{busy?'Guardando…':onboarding?'Guardar favoritos':'Guardar Top 10'}</button></div>
+        <div className="idol-save"><span>{onboarding?`${favorites.length} favoritos`:`${selection.length} / 10`}</span><button className="league-button" disabled={busy || (!onboarding && selection.length!==10) || (onboarding && favorites.length===0)} onClick={()=>onboarding?setConfirmFavorites(true):setConfirmDaily(true)}>{busy?'Guardando…':onboarding?'Guardar favoritos':'Revisar y votar'}</button></div>
       </>}
     </>)}
     {confirmed && <VoteConfirmation category={confirmed} topSize={10} onClose={()=>setConfirmed(null)}/>}
-    {confirmFavorites && <dialog ref={favoriteDialog} className="vote-confirmation" onCancel={e=>{if(busy)e.preventDefault();else setConfirmFavorites(false);}}><h2>¿Guardar {favorites.length} favoritos?</h2>{error && <ErrorNotice compact error={error} onDismiss={()=>setError(null)}/>}<p>Recibirán 5 puntos cada uno. No podrás cambiar esta selección durante la temporada.</p><button className="league-button" disabled={busy} onClick={()=>void save('favorites')}>Confirmar favoritos</button><button className="league-button" disabled={busy} onClick={()=>setConfirmFavorites(false)}>Volver</button></dialog>}
+    {confirmFavorites && <dialog ref={favoriteDialog} className="vote-confirmation" aria-labelledby="favorite-confirm-title" onCancel={e=>{if(busy)e.preventDefault();else setConfirmFavorites(false);}}><h2 id="favorite-confirm-title">¿Guardar {favorites.length} favoritos?</h2>{error && <ErrorNotice compact error={error} onDismiss={()=>setError(null)}/>}<p>Recibirán 5 puntos cada uno. No podrás cambiar esta selección durante la temporada.</p><button type="button" className="league-button" disabled={busy} onClick={()=>void save('favorites')}>Confirmar favoritos</button><button type="button" className="dialog-secondary-button" disabled={busy} onClick={()=>setConfirmFavorites(false)}>Volver</button></dialog>}
+    {confirmDaily && <dialog ref={dailyDialog} className="vote-confirmation idol-review-dialog" aria-labelledby="idol-review-title" onCancel={e=>{e.preventDefault();if(!busy)setConfirmDaily(false);}}>
+      <p className="eyebrow">{category==='male'?'Hombres':'Mujeres'} · revisión final</p><h2 id="idol-review-title">Confirma tu Top 10</h2><p>El voto se guardará una vez para hoy. Revisa el orden porque asigna de 10 a 1 puntos.</p>
+      <ol className="idol-review-list">{selection.map((id,index)=><li key={id}><strong>{String(index+1).padStart(2,'0')}</strong><span>{data.catalog.find(i=>i.id===id)?.name || 'Idol'}</span><b>{10-index} pts</b></li>)}</ol>
+      {error && <ErrorNotice compact error={error} onDismiss={()=>setError(null)}/>}<button autoFocus type="button" className="league-button" disabled={busy} onClick={()=>void save('daily')}>{busy?'Guardando…':'Confirmar voto'}</button><button type="button" className="dialog-secondary-button" disabled={busy} onClick={()=>setConfirmDaily(false)}>Volver a editar</button>
+    </dialog>}
   </section>;
 }
