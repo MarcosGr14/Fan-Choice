@@ -20,7 +20,7 @@ export function runPeriodicVotingTests(){
  assert(!validSelections('monthly_idols',{male:['i0','i1'],female:['i0','i1']},{artists,idols}),'monthly idol ballot rejects cross-category selection');
  assert(!validSelections('weekly_artists',{male:['m0'],female:[]},{artists,idols}),'incomplete ballot is rejected');
  const soloCatalog=[...artists,...artists.map((x,i)=>({...x,id:`f${i}`,category:'female'}))].map((x,i)=>i===0?{...x,artistType:'soloist'}:x);
- assert(!validSelections('weekly_artists',{male:artists.map(x=>x.id),female:artists.map((_,i)=>`f${i}`)},{artists:soloCatalog,idols}),'weekly artist ballots only accept groups');
+ assert(validSelections('weekly_artists',{male:artists.map(x=>x.id),female:artists.map((_,i)=>`f${i}`)},{artists:soloCatalog,idols}),'weekly artist ballots accept approved eligible soloists alongside groups');
  const female=IDOLS.filter(i=>i.category==='female').slice(0,2);
  const monthlyIdol:PeriodicSubmission={seasonId:'s',participantId:'p',kind:'monthly_idols',periodKey:'2026-11',submittedDate:'2026-11-24',selections:{male:[],female:female.map(i=>i.id)}};
  const ranked=rankIdols([],'s',false,[monthlyIdol]);

@@ -34,7 +34,7 @@ export function validSelections(kind: PeriodicVoteKind, selections: unknown, cat
     const expected=monthly?(isArtist?1:2):isArtist?10:10;
     if(!Array.isArray(ids)||ids.length!==expected||ids.some(id=>typeof id!=='string')||new Set(ids).size!==ids.length) return false;
     const catalog: {id:string;category:string;status?:string;isEligible?:boolean;artistType?:string}[]=isArtist?catalogs.artists:catalogs.idols;
-    if(ids.some(id=>!catalog.some(item=>item.id===id&&item.category===category&&(!isArtist||(item.status==='approved'&&item.isEligible&&(kind!=='weekly_artists'||item.artistType==='group'))))))return false;
+    if(ids.some(id=>!catalog.some(item=>item.id===id&&item.category===category&&(!isArtist||(item.status==='approved'&&item.isEligible)))))return false;
   }
   return true;
 }

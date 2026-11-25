@@ -226,7 +226,7 @@
 .next-vote small { display:block; color:var(--muted); font-size:10px; margin-top:14px; }
 .saved-ballot h3 { font-size:23px; font-weight:600; margin-bottom:12px; }
 .saved-ballot ol { display:grid; gap:8px; }
-.saved-ballot li { display:flex; align-items:center; gap:14px; padding:12px 14px; border:1px solid var(--line); border-radius:5px; background:#101015; }
+.saved-ballot li { display:flex; align-items:center; gap:14px; padding:12px 14px; border:1px solid var(--line); border-radius:5px; background:var(--surface); color:var(--text); }
 .saved-ballot-rank { font-family:'Unbounded',sans-serif; font-size:24px; color:var(--pink); }
 .saved-ballot li strong { flex:1; min-width:0; overflow-wrap:anywhere; font-family:'Unbounded',sans-serif; text-transform:uppercase; font-size:23px; font-weight:500; }
 .saved-ballot-points { color:var(--green); font-size:12px; white-space:nowrap; }
@@ -649,6 +649,17 @@
 .ranking-artist-compact .ranking-bar-item>div:first-child { font-size:8px; }
 .ranking-artist-compact .ranking-total strong,.ranking-total strong { font-size:13px; }
 .ranking-board-switch button { min-height:48px; font-size:14px; }
+@media(min-width:1200px) {
+  .ranking-podium .ranking-artist-entry,.ranking-idol-podium .ranking-idol-entry { grid-template-columns:minmax(0,1fr) auto; grid-template-areas:"position total" "portrait portrait" "name name" "details details"; justify-items:stretch; gap:9px; padding:12px; }
+  .ranking-podium .ranking-entry-position,.ranking-idol-podium .ranking-entry-position { grid-area:position; align-self:center; padding:0; }
+  .ranking-podium .ranking-entry-name,.ranking-idol-podium .ranking-entry-name { grid-area:name; text-align:center; }
+  .ranking-podium .ranking-entry-name h3,.ranking-idol-podium .ranking-entry-name h3 { overflow-wrap:anywhere; white-space:normal; }
+  .ranking-podium .ranking-entry-name p,.ranking-idol-podium .ranking-entry-name p { white-space:normal; }
+  .ranking-podium .ranking-entry-position~.ranking-portrait,.ranking-idol-podium .ranking-idol-entry>.idol-portrait { grid-area:portrait; justify-self:center; }
+  .ranking-podium .ranking-total,.ranking-idol-podium .ranking-total { grid-area:total; justify-items:end; }
+  .ranking-podium .ranking-bars,.ranking-idol-podium .ranking-idol-breakdown { grid-area:details; grid-column:auto; grid-row:auto; }
+  .ranking-podium .ranking-bars { grid-template-columns:1fr; }
+}
 @media(max-width:1199px) {
   .ranking-board-grid { grid-template-columns:minmax(0,1fr); }
   .ranking-podium { grid-template-columns:minmax(0,1fr); }
