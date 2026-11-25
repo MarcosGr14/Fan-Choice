@@ -1,5 +1,5 @@
 import React, { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
-import { Trophy, LogOut, Lock, CalendarDays, Plus, CheckCircle2, Sun, Moon, Crown, ArrowRight, Sparkles, Users, ChevronDown, UserRound } from 'lucide-react';
+import { Trophy, LogOut, Lock, CalendarDays, Plus, CheckCircle2, Sun, Moon, Crown, ArrowRight, ArrowLeft, Sparkles, Users, ChevronDown, UserRound } from 'lucide-react';
 import { apiClient, ApiRequestError, type ApiResponse } from './services/apiClient';
 import { ErrorNotice, toUserError, type UserError } from './ErrorNotice';
 import type { Artist, ArtistCumulativeStats, ArchivedSeasonRecord, Category, Participant, Season } from './types';
@@ -9,7 +9,13 @@ import type { LifetimeHistoryCache } from './LifetimeHistory';
 import { LoadingSkeleton } from './LoadingSkeleton';
 import { RankingsPage } from './RankingsPage';
 import { NextVoteClock, VoteConfirmation } from './VoteFeedback';
-import hero from './assets/images/league_hero_banner_1792299063889.webp';
+import homeBannerOne from './assets/images/fan-choice-banner-01.webp';
+import homeBannerTwo from './assets/images/fan-choice-banner-02.webp';
+import homeBannerThree from './assets/images/fan-choice-banner-03.webp';
+import homeBannerFour from './assets/images/fan-choice-banner-04.webp';
+import homeBannerFive from './assets/images/fan-choice-banner-05.webp';
+import homeBannerSix from './assets/images/fan-choice-banner-06.webp';
+import homeBannerSeven from './assets/images/fan-choice-banner-07.webp';
 
 const IdolLeague = lazy(() => import('./IdolLeague'));
 const PeriodicVoting = lazy(() => import('./PeriodicVoting'));
@@ -93,6 +99,7 @@ export function App() {
   });
   useEffect(()=>{document.documentElement.dataset.theme=theme;localStorage.setItem('fan-choice-theme',theme);document.querySelector('meta[name=theme-color]')?.setAttribute('content',theme==='dark'?'#0e0e12':'#f4f2ec');},[theme]);
   const [tab,setTab] = useState('rankings');
+  const [heroSlide,setHeroSlide] = useState(0);
   const [user,setUser] = useState<Participant | null>(null);
   // Memory-only history cache; discard it whenever the signed-in participant changes.
   const historyCache = useMemo<LifetimeHistoryCache>(() => ({ data: null, loaded: false }), [user?.id]);
@@ -206,6 +213,21 @@ export function App() {
   }
   const season = overview?.season;
   const champion = overview?.standings.absoluteChampion;
+  const homeSlides: { category: 'Mujeres' | 'Hombres'; src: string }[] = [
+    { category: 'Mujeres', src: homeBannerOne },
+    { category: 'Hombres', src: homeBannerTwo },
+    { category: 'Mujeres', src: homeBannerThree },
+    { category: 'Hombres', src: homeBannerFour },
+    { category: 'Mujeres', src: homeBannerFive },
+    { category: 'Hombres', src: homeBannerSix },
+    { category: 'Mujeres', src: homeBannerSeven },
+  ];
+  useEffect(() => {
+    if (homeSlides.length < 2 || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const timer = window.setInterval(() => setHeroSlide(current => (current + 1) % homeSlides.length), 6500);
+    return () => window.clearInterval(timer);
+  }, [homeSlides.length]);
+  useEffect(() => { if (heroSlide >= homeSlides.length) setHeroSlide(0); }, [heroSlide, homeSlides.length]);
   const eligible = artists.filter(a=>a.category===category && a.isEligible && a.status==='approved' && a.eligibilityEffectiveDate<=date);
   const selection = selections[category];
   const currentBallot = votes?.[category==='male'?'maleBallot':'femaleBallot'];
@@ -214,7 +236,6 @@ export function App() {
   const otherVoted = votes?.competitionDate===date && votes?.[otherCategory==='male'?'maleBallot':'femaleBallot'].status==='saved';
   const canVote = !!user && !!season && season.startDate<=date && votes?.competitionDate===date && !votes?.isLocked && !votedToday;
   return <div className="league-app">
-    <link rel="preload" as="image" href={hero} fetchPriority="high"/>
     <header className="site-header"><div className="header-inner">
       <a href="/" className="brand" aria-label="Fan Choice Awards, inicio"><span className="brand-mark"><Trophy aria-hidden="true"/></span><span>Fan Choice <b>Awards</b></span></a>
       <div className="header-actions">
@@ -228,7 +249,7 @@ export function App() {
       {notice && <p role="status" className="rounded-xl border border-emerald-800 bg-emerald-950/40 p-4 flex items-center gap-2"><CheckCircle2 size={18}/>{notice}</p>}
       {!overview && tab==='rankings' && !error && <LoadingSkeleton hero/>}
       {tab==='rankings' && overview && <>
-      <section className="season-hero season-hero-premium"><img src={hero} alt="" loading="eager" fetchPriority="high" decoding="async" width={1376} height={768} className="hero-image"/><div className="hero-content"><p className="eyebrow"><Sparkles size={14}/> Fan Choice · Music Awards</p><h1>Fan Choice <span>Awards</span></h1><p className="hero-season-name">{season?.name || 'Entre temporadas'}</p><p className="hero-caption">{season ? `Desde ${season.startDate} · Día ${season.daysActive}` : 'Próxima temporada pendiente'} · K-pop & J-pop</p><div className="hero-actions"><button className={button} onClick={()=>navigate('voting')}>Votar ahora <ArrowRight size={16}/></button><button className="hero-secondary-action" onClick={()=>navigate('idols')}>Explorar idols</button></div></div><div className="hero-side-note"><div className="season-seal"><span>SEASON</span><strong>02</strong><span>{season?.status==='active'?'EN VIVO':'AWARDS'}</span></div><div className="hero-stat"><Users size={17}/><span><strong>{artists.length}</strong> artistas</span></div></div><span className="hero-watermark" aria-hidden="true">FC</span><div className="hero-bottomline"><span><i/> {season?.status==='active'?'Temporada activa · en vivo':'Ranking de temporada'}</span><span>Panamá · K-pop · J-pop</span></div></section>
+      <section className="season-hero season-hero-premium" aria-roledescription="carrusel" aria-label="Destacados de la temporada"><img src={homeSlides[heroSlide].src} alt="" loading="eager" fetchPriority="high" decoding="async" width={1920} height={1080} className="hero-image"/><div className="hero-content"><p className="eyebrow"><Sparkles size={14}/> Fan Choice · Music Awards</p><h1>Fan Choice <span>Awards</span></h1><p className="hero-season-name">{season?.name || 'Entre temporadas'}</p><p className="hero-caption">{homeSlides[heroSlide].category} · Foto destacada · K-pop & J-pop</p><div className="hero-actions"><button className={button} onClick={()=>navigate('voting')}>Votar ahora <ArrowRight size={16}/></button><button className="hero-secondary-action" onClick={()=>navigate('idols')}>Explorar idols</button></div></div><div className="hero-side-note"><div className="season-seal"><span>SEASON</span><strong>02</strong><span>{season?.status==='active'?'EN VIVO':'AWARDS'}</span></div><div className="hero-stat"><Users size={17}/><span><strong>{artists.length}</strong> artistas</span></div></div>{homeSlides.length > 1 && <div className="hero-carousel-controls" aria-label="Controles de destacados"><span>{String(heroSlide + 1).padStart(2,'0')} <i/> {String(homeSlides.length).padStart(2,'0')}</span><button type="button" aria-label="Imagen anterior" onClick={()=>setHeroSlide(current=>(current-1+homeSlides.length)%homeSlides.length)}><ArrowLeft size={16}/></button><button type="button" aria-label="Siguiente imagen" onClick={()=>setHeroSlide(current=>(current+1)%homeSlides.length)}><ArrowRight size={16}/></button></div>}<span className="hero-watermark" aria-hidden="true">FC</span><div className="hero-bottomline"><span><i/> {season?.status==='active'?'Temporada activa · en vivo':'Ranking de temporada'}</span><span>Panamá · K-pop · J-pop</span></div></section>
         <section className="winner-stage"><div className="home-section-heading winner-section-heading"><div><p className="home-section-kicker">La cima de la temporada</p><h2>Los líderes</h2></div><button className="home-link-button" onClick={()=>navigate('ranking')}>Ver ranking completo <ArrowRight size={15}/></button></div><div className="winner-grid">
           <article className="winner-card winner-overall"><div className="winner-card-art"><span>01</span><div className="winner-orbit"/></div><div className="winner-overall-copy"><p className="winner-card-label"><Trophy size={14}/> Campeón absoluto · Artistas</p><div className="winner-main-identity"><div className="champion-photo"><span className="photo-initials" aria-hidden="true">{season && champion && champion.cumulativePoints>0 ? champion.artist.displayName.split(' ').map(word=>word[0]).slice(0,2).join('') : 'FC'}</span>{season && champion && champion.cumulativePoints>0 && champion.artist.imageUrl && <img src={champion.artist.imageUrl.replace('ab6761610000e5eb','ab6761610000f178')} alt={champion.artist.displayName} loading="eager" decoding="async" width={108} height={108} onError={e=>{if(e.currentTarget.getAttribute('src')!==champion.artist.imageUrl){e.currentTarget.src=champion.artist.imageUrl!;}else{e.currentTarget.style.display='none';}}}/>}</div><div className="champion-info"><h3>{season && champion && champion.cumulativePoints>0 ? champion.artist.displayName : 'Aún sin ganador'}</h3><p className="winner-category">{season && champion?.cumulativePoints ? (champion.artist.artistType==='group'?'Grupo':'Solista')+' · '+(champion.artist.category==='male'?'Categoría hombres':'Categoría mujeres') : 'Los votos definirán al campeón absoluto'}</p></div></div><div className="winner-scoreline"><strong>{season ? champion?.cumulativePoints || 0 : 0}</strong><span>puntos acumulados</span></div></div></article>
           <IdolWinnerCard category="male" winner={idolOverview?.rankings.male[0]}/><IdolWinnerCard category="female" winner={idolOverview?.rankings.female[0]}/>

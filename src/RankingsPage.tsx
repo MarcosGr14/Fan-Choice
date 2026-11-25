@@ -124,7 +124,7 @@ export function RankingsPage({ season, standings, idols, idolError, onRetryIdols
     <header className="rankings-page-heading"><div><p className="ranking-eyebrow">Fan Choice · La competencia</p><h1>Ranking</h1><p>Dos categorías independientes. Una clasificación clara y al día.</p></div><span className="ranking-season-label">{season?.name || 'Temporada sin iniciar'}</span></header>
 
     <section className="absolute-champion-card" aria-label="Campeón absoluto de artistas">
-      <div className="absolute-champion-icon"><Trophy aria-hidden="true" /></div>
+      {championHasPoints && champion.artist.imageUrl ? <Portrait src={champion.artist.imageUrl.replace('ab6761610000e5eb', 'ab6761610000f178')} name={champion.artist.displayName} initials={champion.artist.displayName.split(' ').map((word) => word[0]).slice(0, 2).join('')} priority /> : <div className="absolute-champion-icon"><Trophy aria-hidden="true" /></div>}
       <div className="absolute-champion-copy"><p className="ranking-eyebrow"><Crown size={14} /> Campeón absoluto · Artistas</p><h2>{championHasPoints ? champion.artist.displayName : 'Aún sin ganador'}</h2><span>{championHasPoints ? `${champion.artist.artistType === 'group' ? 'Grupo' : 'Solista'} · categoría ${categoryName(champion.artist.category)}` : 'Los puntos acumulados de ambas categorías definirán el liderazgo.'}</span></div>
       <div className="absolute-champion-points"><strong><AnimatedNumber value={championHasPoints ? champion.cumulativePoints : 0} /></strong><span>puntos</span></div>
     </section>
