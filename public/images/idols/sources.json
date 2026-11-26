@@ -2,6 +2,26 @@
   "notice": "Photographs belong to their respective rights holders. Source profiles are recorded for attribution and replacement.",
   "photos": [
     {
+      "id": "aespa-giselle",
+      "file": "aespa-giselle.webp",
+      "source": "https://kprofiles.com/aespa-members-profile/"
+    },
+    {
+      "id": "aespa-karina",
+      "file": "aespa-karina.webp",
+      "source": "https://kprofiles.com/aespa-members-profile/"
+    },
+    {
+      "id": "aespa-ningning",
+      "file": "aespa-ningning.webp",
+      "source": "https://kprofiles.com/aespa-members-profile/"
+    },
+    {
+      "id": "aespa-winter",
+      "file": "aespa-winter.webp",
+      "source": "https://kprofiles.com/aespa-members-profile/"
+    },
+    {
       "id": "alice-syndrome-awon",
       "file": "alice-syndrome-awon.webp",
       "source": "https://kprofiles.com/alice-syndrome-members-profile/"
@@ -447,6 +467,36 @@
       "source": "https://kprofiles.com/illit-members-profile/"
     },
     {
+      "id": "ive-gaeul",
+      "file": "ive-gaeul.webp",
+      "source": "https://kprofiles.com/ive-members-profile/"
+    },
+    {
+      "id": "ive-leeseo",
+      "file": "ive-leeseo.webp",
+      "source": "https://kprofiles.com/ive-members-profile/"
+    },
+    {
+      "id": "ive-liz",
+      "file": "ive-liz.webp",
+      "source": "https://kprofiles.com/ive-members-profile/"
+    },
+    {
+      "id": "ive-rei",
+      "file": "ive-rei.webp",
+      "source": "https://kprofiles.com/ive-members-profile/"
+    },
+    {
+      "id": "ive-wonyoung",
+      "file": "ive-wonyoung.webp",
+      "source": "https://kprofiles.com/ive-members-profile/"
+    },
+    {
+      "id": "ive-yujin",
+      "file": "ive-yujin.webp",
+      "source": "https://kprofiles.com/ive-members-profile/"
+    },
+    {
       "id": "kickflip-amaru",
       "file": "kickflip-amaru.webp",
       "source": "https://kickflip.jype.com/profile"
@@ -615,6 +665,26 @@
       "id": "nct-127-yuta",
       "file": "nct-127-yuta.webp",
       "source": "https://kprofiles.com/nct-127-members-profile/"
+    },
+    {
+      "id": "newjeans-haerin",
+      "file": "newjeans-haerin.webp",
+      "source": "https://kprofiles.com/newjeans-members-profile/"
+    },
+    {
+      "id": "newjeans-hanni",
+      "file": "newjeans-hanni.webp",
+      "source": "https://kprofiles.com/newjeans-members-profile/"
+    },
+    {
+      "id": "newjeans-hyein",
+      "file": "newjeans-hyein.webp",
+      "source": "https://kprofiles.com/newjeans-members-profile/"
+    },
+    {
+      "id": "newjeans-minji",
+      "file": "newjeans-minji.webp",
+      "source": "https://kprofiles.com/newjeans-members-profile/"
     },
     {
       "id": "nmixx-bae",
@@ -935,6 +1005,41 @@
       "id": "treasure-yoshi",
       "file": "treasure-yoshi.webp",
       "source": "https://kprofiles.com/treasure-members-profile/"
+    },
+    {
+      "id": "tuide-elena",
+      "file": "tuide-elena.webp",
+      "source": "https://kprofiles.com/tuide-members-profile/"
+    },
+    {
+      "id": "tuide-jia",
+      "file": "tuide-jia.webp",
+      "source": "https://kprofiles.com/tuide-members-profile/"
+    },
+    {
+      "id": "tuide-saki",
+      "file": "tuide-saki.webp",
+      "source": "https://kprofiles.com/tuide-members-profile/"
+    },
+    {
+      "id": "tuide-seah",
+      "file": "tuide-seah.webp",
+      "source": "https://kprofiles.com/tuide-members-profile/"
+    },
+    {
+      "id": "tuide-seohee",
+      "file": "tuide-seohee.webp",
+      "source": "https://kprofiles.com/tuide-members-profile/"
+    },
+    {
+      "id": "tuide-seoyeon",
+      "file": "tuide-seoyeon.webp",
+      "source": "https://kprofiles.com/tuide-members-profile/"
+    },
+    {
+      "id": "tuide-yi-hani",
+      "file": "tuide-yi-hani.webp",
+      "source": "https://kprofiles.com/tuide-members-profile/"
     },
     {
       "id": "twice-chaeyoung",

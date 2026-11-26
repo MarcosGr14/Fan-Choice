@@ -1345,5 +1345,131 @@ export const IDOLS: Idol[] = [
     "name": "Shuhua",
     "group": "i-dle",
     "category": "female"
+  },
+  {
+    "id": "aespa-karina",
+    "name": "Karina",
+    "group": "aespa",
+    "category": "female"
+  },
+  {
+    "id": "aespa-giselle",
+    "name": "Giselle",
+    "group": "aespa",
+    "category": "female"
+  },
+  {
+    "id": "aespa-winter",
+    "name": "Winter",
+    "group": "aespa",
+    "category": "female"
+  },
+  {
+    "id": "aespa-ningning",
+    "name": "Ningning",
+    "group": "aespa",
+    "category": "female"
+  },
+  {
+    "id": "ive-yujin",
+    "name": "Yujin",
+    "group": "IVE",
+    "category": "female"
+  },
+  {
+    "id": "ive-gaeul",
+    "name": "Gaeul",
+    "group": "IVE",
+    "category": "female"
+  },
+  {
+    "id": "ive-rei",
+    "name": "Rei",
+    "group": "IVE",
+    "category": "female"
+  },
+  {
+    "id": "ive-wonyoung",
+    "name": "Wonyoung",
+    "group": "IVE",
+    "category": "female"
+  },
+  {
+    "id": "ive-liz",
+    "name": "Liz",
+    "group": "IVE",
+    "category": "female"
+  },
+  {
+    "id": "ive-leeseo",
+    "name": "Leeseo",
+    "group": "IVE",
+    "category": "female"
+  },
+  {
+    "id": "newjeans-minji",
+    "name": "Minji",
+    "group": "NewJeans",
+    "category": "female"
+  },
+  {
+    "id": "newjeans-hanni",
+    "name": "Hanni",
+    "group": "NewJeans",
+    "category": "female"
+  },
+  {
+    "id": "newjeans-haerin",
+    "name": "Haerin",
+    "group": "NewJeans",
+    "category": "female"
+  },
+  {
+    "id": "newjeans-hyein",
+    "name": "Hyein",
+    "group": "NewJeans",
+    "category": "female"
+  },
+  {
+    "id": "tuide-seohee",
+    "name": "Seohee",
+    "group": "TUIDE",
+    "category": "female"
+  },
+  {
+    "id": "tuide-seoyeon",
+    "name": "Seoyeon",
+    "group": "TUIDE",
+    "category": "female"
+  },
+  {
+    "id": "tuide-elena",
+    "name": "Elena",
+    "group": "TUIDE",
+    "category": "female"
+  },
+  {
+    "id": "tuide-jia",
+    "name": "Jia",
+    "group": "TUIDE",
+    "category": "female"
+  },
+  {
+    "id": "tuide-saki",
+    "name": "Saki",
+    "group": "TUIDE",
+    "category": "female"
+  },
+  {
+    "id": "tuide-seah",
+    "name": "Seah",
+    "group": "TUIDE",
+    "category": "female"
+  },
+  {
+    "id": "tuide-yi-hani",
+    "name": "Yi Hani",
+    "group": "TUIDE",
+    "category": "female"
   }
 ];
