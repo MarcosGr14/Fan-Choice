@@ -1,58 +1,71 @@
-# Fan Choice Most Populars
+# Fan Choice Awards
 
-Liga musical privada con rankings por temporada. Interfaz React y API Express, desplegadas juntas en Railway; persistencia PostgreSQL en Supabase.
+<p align="center">
+  <img src="src/assets/images/fan-choice-banner-01.webp" alt="TWICE en el carrusel de Fan Choice Awards" width="100%" />
+</p>
 
-## Desarrollo
+<p align="center"><strong>La música la eligen sus fans.</strong><br />Una plataforma de votación y rankings para artistas e idols de K-pop y J-pop.</p>
 
-Requiere Node.js 24. Copia `.env.example` a `.env` y configura tus credenciales locales.
+<p align="center">
+  <a href="https://fan-choice-production.up.railway.app">Abrir Fan Choice Awards</a>
+  · Panamá · K-pop · J-pop
+</p>
 
-```bash
-npm ci
-npm run dev
-```
+---
 
-Abre http://localhost:3000. El servidor local incluye la API.
+## El producto
 
-## Base de datos
+Fan Choice Awards convierte la participación de los fans en una competencia musical por temporadas. Reúne votos diarios y especiales, posiciones de ranking y reproducciones en una experiencia web adaptable a computadoras y celulares.
 
-Las migraciones están en `db/migrations`, numeradas en orden de aplicación. En una instalación existente ejecuta únicamente las pendientes. `004_idol_voting.sql` añade las votaciones de idols. El catálogo inicial de artistas está en `db/seeds`; el de idols, en `src/data/idols.ts`.
+Cada temporada mantiene clasificaciones independientes para artistas hombres, artistas mujeres e idols. Los resultados de una temporada cerrada se conservan en el archivo para consultar sus ganadores y rankings.
 
-## Railway
+## Qué ofrece
 
-El repositorio incluye `Dockerfile` y `railway.toml`. Configura estas variables en el servicio:
+- **Votación diaria de artistas:** cada participante ordena un Top 5 para cada categoría.
+- **Mega Voto semanal:** Top 10 de artistas y Top 10 de idols por categoría, con una puntuación especial para el primer lugar.
+- **Favorito mensual:** un artista favorito por categoría y selecciones de bias y bias wrecker para idols.
+- **Rankings de temporada:** Top 10 de hombres y mujeres, ranking independiente de idols y reconocimiento al campeón absoluto de artistas.
+- **Estadísticas musicales:** reproducciones integradas en la puntuación de artistas y vistas de actividad e historial.
+- **Archivo de temporadas:** resultados preservados al cierre, incluidos los rankings de idols.
+- **Experiencia adaptable:** temas claro y oscuro, navegación responsive e instalación como aplicación web progresiva (PWA).
 
-- `DATABASE_URL`: conexión PostgreSQL.
-- `JWT_SECRET`: secreto propio y aleatorio.
-- `USE_MOCK_LISTENING_DATA=false`.
-- `SPOTIFY_DUO_CHARTS_API_URL`: origen del proveedor de reproducciones.
-- `SPOTIFY_DUO_CHARTS_API_SECRET`: token de integración del proveedor.
+## Cómo se forman los rankings
 
-La aplicación sirve frontend y API en el mismo dominio. Para compilar y arrancar manualmente:
+### Artistas
 
-```bash
-npm run build
-npm start
-```
+Los votos diarios otorgan **5, 4, 3, 2 y 1 puntos** según la posición del Top 5. Las reproducciones sincronizadas también suman un bonus diario escalonado. Los votos especiales semanales y mensuales contribuyen a la clasificación de la temporada.
 
-Nunca publiques `.env`, contraseñas ni copias de la base de datos. Las variables `VITE_` son públicas: no deben contener secretos. `.env.example` contiene únicamente valores de ejemplo.
+### Idols
 
-## Rankings
+Los rankings de idols se calculan por separado de los artistas y de Spotify. Las selecciones iniciales de favoritos, los votos diarios y las votaciones especiales semanales y mensuales aportan puntos al Top 10 de cada categoría.
 
-- Artistas: Top 5 diario y bonus por reproducciones del catálogo aprobado.
-- Idols: favoritos iniciales de 5 puntos por usuario y temporada; Top 10 diario con 10 a 1 puntos, independiente de Spotify.
-- El día de votación usa la zona `America/Panama`.
-- El administrador cierra la temporada manualmente. Los idols tienen un ganador por categoría y empiezan desde cero en la siguiente temporada.
+### Votaciones especiales
 
-## Mantenimiento
+| Votación | Selección por categoría | Puntuación |
+| --- | --- | --- |
+| Mega Voto semanal · artistas | Top 10 | 25 puntos al primer lugar; 15 a cada posición restante |
+| Mega Voto semanal · idols | Top 10 | 50 puntos al primer lugar; 20 a cada posición restante |
+| Favorito mensual · artistas | 1 artista | 50 puntos |
+| Bias del mes · idols | Bias y bias wrecker | 75 y 50 puntos, respectivamente |
 
-```bash
-npm run lint
-npm test
-npm run build
-npm run import:history
-npm run import:lifetime
-```
+Los periodos siguen el calendario de Panamá: los votos semanales comienzan los lunes y los mensuales el primer día de cada mes.
 
-Las importaciones requieren la conexión y el proveedor configurados. Para cambiar una contraseña, ejecuta `npx tsx src/scripts/setPassword.ts <usuario>`; el comando la solicita de forma interactiva.
+## Identidad
 
-Los documentos antiguos se conservan localmente en `.local-notes/`, excluida de Git y del contexto de Docker.
+La interfaz conserva la marca Fan Choice con una dirección visual moderna y editorial, paleta **Tinta + Volt**, tipografías Onest y Unbounded, imágenes de artistas y microinteracciones discretas.
+
+## Tecnologías
+
+| Área | Tecnologías |
+| --- | --- |
+| Interfaz web | React 19, TypeScript, Vite 8, Tailwind CSS 4 |
+| Componentes y movimiento | Motion, Lucide React |
+| API y lógica de negocio | Node.js 24, Express 4, API REST |
+| Persistencia | PostgreSQL en Supabase |
+| Datos de reproducciones | Integración de Spotify mediante Duo Charts |
+| Servicio web | Railway |
+| Aplicación instalable | Web App Manifest y Service Worker |
+
+---
+
+<p align="center"><sub>Fan Choice Awards · Panamá · K-pop & J-pop</sub></p>

@@ -219,9 +219,9 @@
 .saved-vote-heading p:last-child { color:var(--muted); font-size:12px; line-height:1.6; }
 .next-vote { text-align:center; padding:22px 14px; border:1px solid #ff49a333; border-radius:8px; background:linear-gradient(140deg,#21151e,#101015); }
 .next-vote>p { font-size:12px; color:#dedee6; margin-bottom:16px; }
-.vote-countdown { display:flex; justify-content:center; gap:10px; }
-.vote-countdown>div { width:90px; min-width:0; padding:12px 8px; background:#111117; border:1px solid var(--line); border-radius:6px; }
-.vote-countdown strong { display:block; font-family:'Unbounded',sans-serif; font-variant-numeric:tabular-nums; font-size:clamp(38px,8vw,54px); font-weight:600; line-height:1; color:white; }
+.vote-countdown { display:grid; grid-template-columns:repeat(3,minmax(0,90px)); justify-content:center; gap:10px; width:min(100%,290px); margin-inline:auto; }
+.vote-countdown>div { box-sizing:border-box; display:grid; grid-template-rows:1fr auto; justify-items:center; align-items:center; min-width:0; min-height:82px; padding:10px 4px; background:#111117; border:1px solid var(--line); border-radius:6px; }
+.vote-countdown strong { display:block; max-width:100%; font-family:'Unbounded',sans-serif; font-variant-numeric:tabular-nums; font-size:clamp(30px,7vw,42px); font-weight:600; line-height:1; color:white; }
 .vote-countdown span { display:block; margin-top:8px; color:var(--muted); font-size:9px; text-transform:uppercase; letter-spacing:.08em; }
 .next-vote small { display:block; color:var(--muted); font-size:10px; margin-top:14px; }
 .saved-ballot h3 { font-size:23px; font-weight:600; margin-bottom:12px; }
@@ -488,7 +488,7 @@
 .brand { gap:11px; color:var(--text); font-family:var(--font-display); font-size:13px; font-weight:600; letter-spacing:-.07em; line-height:1.25; text-transform:none; white-space:nowrap; }
 .brand b { margin-top:2px; color:var(--muted); font:500 9px/1.2 var(--font-ui); letter-spacing:.16em; text-transform:uppercase; }
 .brand-mark { display:grid; width:38px; height:38px; place-items:center; border:1px solid color-mix(in srgb,var(--volt) 46%,var(--line)); border-radius:12px; background:color-mix(in srgb,var(--volt) 10%,var(--panel)); }
-.brand-mark svg { width:18px; height:18px; color:var(--volt); }
+.brand-mark img { display:block; width:100%; height:100%; border-radius:inherit; object-fit:cover; }
 .site-nav { order:0; grid-column:2; grid-row:1; width:auto; flex-wrap:nowrap; justify-content:center; gap:4px; min-width:0; overflow-x:auto; scrollbar-width:none; }
 .site-nav::-webkit-scrollbar { display:none; }
 .nav-tab { min-height:46px; padding:10px 12px; color:var(--muted); font-size:13px; white-space:nowrap; }
@@ -649,6 +649,20 @@
 .ranking-artist-compact .ranking-bar-item>div:first-child { font-size:8px; }
 .ranking-artist-compact .ranking-total strong,.ranking-total strong { font-size:13px; }
 .ranking-board-switch button { min-height:48px; font-size:14px; }
+.ranking-board-heading h2 { font-size:27px; }
+.ranking-entry-name h3 { font-size:15px; }
+.ranking-entry-name p { font-size:11px; }
+.ranking-entry-position { font-size:12px; }
+.ranking-total span { font-size:9px; }
+.ranking-total strong,.ranking-first .ranking-total strong { font-size:16px; }
+.ranking-bar-item>div:first-child,.ranking-idol-breakdown { font-size:10px; }
+.ranking-bar-item strong,.ranking-idol-breakdown strong,.ranking-bonus strong { font-size:11px; }
+.ranking-artist-compact .ranking-entry-name h3 { font-size:12px; }
+.ranking-artist-compact .ranking-entry-name p { font-size:10px; }
+.ranking-artist-compact .ranking-movement { font-size:9px; }
+.ranking-artist-compact .ranking-bar-item>div:first-child { font-size:9px; }
+.ranking-artist-compact .ranking-total strong,.ranking-total strong { font-size:14px; }
+.ranking-idol-breakdown { font-size:9px; }
 @media(min-width:1200px) {
   .ranking-podium .ranking-artist-entry,.ranking-idol-podium .ranking-idol-entry { grid-template-columns:minmax(0,1fr) auto; grid-template-areas:"position total" "portrait portrait" "name name" "details details"; justify-items:stretch; gap:9px; padding:12px; }
   .ranking-podium .ranking-entry-position,.ranking-idol-podium .ranking-entry-position { grid-area:position; align-self:center; padding:0; }
@@ -695,27 +709,30 @@
   .ranking-podium { grid-template-columns:minmax(0,1fr); }
   .ranking-podium .ranking-artist-entry,.ranking-artist-compact { grid-template-columns:25px 48px minmax(0,1fr) 58px; gap:8px; padding:10px; }
   .ranking-podium .ranking-portrait,.ranking-artist-compact .ranking-portrait { width:48px; height:48px; border-radius:13px; }
-  .ranking-podium .ranking-entry-name h3,.ranking-artist-compact .ranking-entry-name h3 { font-size:12px; }
-  .ranking-podium .ranking-entry-name p,.ranking-artist-compact .ranking-entry-name p { font-size:10px; }
+  .ranking-podium .ranking-entry-name h3,.ranking-artist-compact .ranking-entry-name h3 { overflow:visible; font-size:14px; text-overflow:clip; white-space:normal; overflow-wrap:anywhere; }
+  .ranking-podium .ranking-entry-name p,.ranking-artist-compact .ranking-entry-name p { overflow:visible; font-size:11px; text-overflow:clip; white-space:normal; overflow-wrap:anywhere; }
   .ranking-podium .ranking-bars,.ranking-artist-compact .ranking-bars { grid-column:1/-1; grid-row:2; grid-template-columns:repeat(3,minmax(0,1fr)); align-items:center; gap:8px; }
   .ranking-podium .ranking-bonus,.ranking-artist-compact .ranking-bonus { display:grid; grid-column:auto; gap:3px; padding:0; }
   .ranking-podium .ranking-total,.ranking-artist-compact .ranking-total { grid-column:4; grid-row:1; justify-items:end; }
   .ranking-podium .ranking-total strong,.ranking-artist-compact .ranking-total strong { font-size:13px; }
   .ranking-artist-compact .ranking-total { grid-column:4; grid-row:1; }
-  .ranking-artist-compact .ranking-total strong { font-size:10px; }
+  .ranking-artist-compact .ranking-total strong { font-size:14px; }
   .ranking-idol-podium { grid-template-columns:minmax(0,1fr); }
   .ranking-idol-podium .ranking-idol-entry,.ranking-idol-compact { grid-template-columns:25px 48px minmax(0,1fr) 58px; gap:8px; padding:10px; }
   .ranking-idol-podium .ranking-total { grid-column:4; grid-row:1; justify-items:end; }
   .ranking-idol-podium .ranking-idol-entry>.idol-portrait,.ranking-idol-compact .idol-portrait { flex-basis:48px; width:48px; height:48px; }
   .ranking-idol-podium .ranking-idol-breakdown,.ranking-idol-compact .ranking-idol-breakdown { grid-column:1/-1; grid-row:2; font-size:10px; }
   .ranking-idol-podium .ranking-total,.ranking-idol-compact .ranking-total { grid-column:4; grid-row:1; }
-  .ranking-idol-breakdown strong { font-size:11px; }
-  .ranking-bar-item>div:first-child { font-size:10px; }
-  .ranking-bar-item strong { font-size:11px; }
+  .ranking-idol-breakdown strong { font-size:12px; }
+  .ranking-bar-item>div:first-child { font-size:11px; }
+  .ranking-bar-item strong { font-size:12px; }
   .ranking-artist-compact .ranking-bar-item>div:first-child { font-size:10px; }
   .ranking-artist-compact .ranking-bar-item strong { font-size:11px; }
-  .ranking-bonus { font-size:10px; }
-  .ranking-bonus strong { font-size:11px; }
+  .ranking-bonus { font-size:11px; }
+  .ranking-bonus strong { font-size:12px; }
+  .vote-countdown { grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; width:min(100%,290px); }
+  .vote-countdown>div { min-height:78px; padding:9px 2px; }
+  .vote-countdown strong { font-size:clamp(28px,8vw,40px); }
 }
 
 /* Voting, stats, history and administration share the Tinta + Volt surfaces. */
