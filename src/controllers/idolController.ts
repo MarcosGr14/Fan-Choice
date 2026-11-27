@@ -1,3 +1,4 @@
+import { dailyIdolLimits, validVoteCount } from '../data/voteRules';
 import type { Request, Response } from 'express';
 import type { AuthenticatedRequest } from '../middleware/auth';
 import { leagueStore } from '../repositories/leagueStore';
@@ -31,7 +32,7 @@ export async function submit(req: AuthenticatedRequest, res: Response) {
   if (!season || season.startDate>date) return res.status(403).json({error:'No hay una temporada activa para votar.'});
   if (seasonId!==season.id || competitionDate!==date) return res.status(409).json({error:'Cambió el día o la temporada. Actualiza antes de votar.'});
   if (!['favorites','daily'].includes(kind) || !Array.isArray(idolIds) || idolIds.some(id=>typeof id!=='string') || new Set(idolIds).size!==idolIds.length || idolIds.length>IDOLS.length) return res.status(400).json({error:'Selección inválida o repetida.'});
-  if ((kind==='favorites' && category!=='all') || (kind==='daily' && (!['male','female'].includes(category) || idolIds.length!==10))) return res.status(400).json({error:'Elige 10 idols diferentes de la misma categoría.'});
+  if ((kind==='favorites' && category!=='all') || (kind==='daily' && (!['male','female'].includes(category) || !validVoteCount(idolIds.length, dailyIdolLimits)))) return res.status(400).json({error:`Elige entre ${dailyIdolLimits.min} y ${dailyIdolLimits.max} idols diferentes de la misma categoría.`});
   if (idolIds.some(id=>!IDOLS.some(i=>i.id===id && (kind==='favorites' || i.category===category)))) return res.status(400).json({error:'La selección contiene idols no elegibles.'});
   const own = leagueStore.idolSubmissions.filter(s=>s.seasonId===season.id && s.participantId===req.user!.id);
   if (kind==='daily' && !own.some(s=>s.kind==='favorites')) return res.status(409).json({error:'Guarda primero tus favoritos de temporada.'});

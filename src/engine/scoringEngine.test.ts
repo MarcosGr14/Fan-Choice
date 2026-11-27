@@ -33,7 +33,7 @@ export function runScoringEngineTests(): { passed: number; failed: number; error
   assert(getPointsForPosition(3) === 3, '3rd place must award 3 points');
   assert(getPointsForPosition(4) === 2, '4th place must award 2 points');
   assert(getPointsForPosition(5) === 1, '5th place must award 1 point');
-  assert(getPointsForPosition(6) === 0, 'Out-of-bounds position must award 0 points');
+  assert(getPointsForPosition(10) === 1 && getPointsForPosition(11) === 0, 'Artist position 10 scores 1 and position 11 scores 0');
 
   // 2. Stream bonus tier mapping
   assert(calculateListeningBonus(0) === 0, '0 streams must yield 0 bonus points');

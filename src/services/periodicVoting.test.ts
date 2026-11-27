@@ -14,13 +14,15 @@ export function runPeriodicVotingTests(){
  assert(points.find(x=>x.id==='b')?.points===15,'weekly artist second gets 15');
  assert(points.find(x=>x.id==='z')?.points===0,'unselected artist gets zero');
  assert(periodicPoints(votes,'s','weekly_artists',['a'],'male',undefined,'2026-11-23')[0].points===0,'future submissions stay out of historical standings');
- const artists=Array.from({length:10},(_,i)=>({id:`m${i}`,category:'male',artistType:'group',status:'approved',isEligible:true}));
+ const artists=Array.from({length:15},(_,i)=>({id:`m${i}`,category:'male',artistType:'group',status:'approved',isEligible:true}));
  const idols=Array.from({length:10},(_,i)=>({id:`i${i}`,category:'female'}));
  assert(validSelections('weekly_artists',{male:artists.map(x=>x.id),female:artists.map(x=>`f${x.id.slice(1)}`)},{artists:[...artists,...artists.map((x,i)=>({...x,id:`f${i}`,category:'female'}))],idols}),'valid weekly artist ballot passes');
  assert(!validSelections('monthly_idols',{male:['i0','i1'],female:['i0','i1']},{artists,idols}),'monthly idol ballot rejects cross-category selection');
  assert(!validSelections('weekly_artists',{male:['m0'],female:[]},{artists,idols}),'incomplete ballot is rejected');
  const soloCatalog=[...artists,...artists.map((x,i)=>({...x,id:`f${i}`,category:'female'}))].map((x,i)=>i===0?{...x,artistType:'soloist'}:x);
  assert(validSelections('weekly_artists',{male:artists.map(x=>x.id),female:artists.map((_,i)=>`f${i}`)},{artists:soloCatalog,idols}),'weekly artist ballots accept approved eligible soloists alongside groups');
+ const expanded = {...votes[0], selections:{male:artists.map(x=>x.id),female:[]}};
+ assert(periodicPoints([expanded],'s','weekly_artists',['m9','m10','m14'],'male').map(x=>x.points).join(',')==='15,10,10','weekly artist positions 11–15 award 10 points');
  const female=IDOLS.filter(i=>i.category==='female').slice(0,2);
  const monthlyIdol:PeriodicSubmission={seasonId:'s',participantId:'p',kind:'monthly_idols',periodKey:'2026-11',submittedDate:'2026-11-24',selections:{male:[],female:female.map(i=>i.id)}};
  const ranked=rankIdols([],'s',false,[monthlyIdol]);

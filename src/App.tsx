@@ -1,3 +1,4 @@
+import { dailyArtistLimits, dailyArtistPoints, validVoteCount } from './data/voteRules';
 import React, { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { Trophy, LogOut, Lock, CalendarDays, Plus, CheckCircle2, Sun, Moon, Crown, ArrowRight, ArrowLeft, Sparkles, Users, ChevronDown, UserRound } from 'lucide-react';
 import { apiClient, ApiRequestError, type ApiResponse } from './services/apiClient';
@@ -32,7 +33,7 @@ type ArchiveSummary = { seasonId: string; name: string; closedAt: string; totalV
 const field = 'league-field';
 const button = 'league-button';
 const card = 'league-panel';
-const emptyBallot = () => Array<string>(5).fill('');
+const emptyBallot = () => Array<string>(dailyArtistLimits.max).fill('');
 function localDate() { return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Panama', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date()); }
 function time(value: string) { return new Date(value).toLocaleString('es', {timeZone: 'America/Panama'}); }
 async function unwrap<T>(request: Promise<ApiResponse<T>>): Promise<T> {
@@ -131,7 +132,7 @@ export function App() {
   const [confirmation,setConfirmation] = useState('');
   const [artistForm,setArtistForm] = useState({displayName:'',spotifyArtistId:'',category:'male',artistType:'group',musicScene:'kpop',originCountry:'KR',imageUrl:''});
   const [showLogin,setShowLogin] = useState(false);
-  const [voteConfirmation,setVoteConfirmation] = useState<Category | null>(null);
+  const [voteConfirmation,setVoteConfirmation] = useState<{ category: Category; count: number } | null>(null);
   const retryAction = useRef<(() => Promise<void>) | null>(null);
   const tabRef = useRef(tab);
   function navigate(nextTab:string) { tabRef.current=nextTab;setTab(nextTab);setError(null);retryAction.current=null;setNotice(''); }
@@ -175,7 +176,7 @@ export function App() {
   useEffect(() => {
     if(!votes || votes.competitionDate!==date) return;
     setSelections(previous=>{
-      const fromBallot=(items:Votes['maleBallot']['items'])=>Array.from({length:5},(_,i)=>items.find(it=>it.rankPosition===i+1)?.artistId || '');
+      const fromBallot=(items:Votes['maleBallot']['items'])=>Array.from({length:dailyArtistLimits.max},(_,i)=>items.find(it=>it.rankPosition===i+1)?.artistId || '');
       return {
         male:votes.maleBallot.status==='saved'?fromBallot(votes.maleBallot.items):previous.male,
         female:votes.femaleBallot.status==='saved'?fromBallot(votes.femaleBallot.items):previous.female,
@@ -194,14 +195,14 @@ export function App() {
   }
   async function submitVote() {
     const target=category;
-    if (!canVote || voteLocks.current[target]) return;
+    if (!canVote || !validArtistDraft || voteLocks.current[target]) return;
     voteLocks.current[target]=true;
     setSavingVotes(previous=>({...previous,[target]:true}));setError(null);setNotice('');
-    const items=selection.map((artistId,i)=>({artistId,rankPosition:i+1}));
+    const items=selection.slice(0,selectedArtistCount).map((artistId,i)=>({artistId,rankPosition:i+1}));
     try {
       await unwrap(apiClient.submitBallot(target,items,date));
       setVotes(previous=>previous && previous.competitionDate===date ? {...previous,[target==='male'?'maleBallot':'femaleBallot']:{status:'saved',items}} : previous);
-      setVoteConfirmation(target);
+      setVoteConfirmation({ category: target, count: items.length });
     } catch(e) {
       reportError(e,()=>submitVote());
       if(!apiClient.getToken()){setUser(null);setVotes(null);}
@@ -230,6 +231,10 @@ export function App() {
   useEffect(() => { if (heroSlide >= homeSlides.length) setHeroSlide(0); }, [heroSlide, homeSlides.length]);
   const eligible = artists.filter(a=>a.category===category && a.isEligible && a.status==='approved' && a.eligibilityEffectiveDate<=date);
   const selection = selections[category];
+  const selectedArtistCount = selection.filter(Boolean).length;
+  const validArtistDraft = validVoteCount(selectedArtistCount, dailyArtistLimits)
+    && selection.slice(0, selectedArtistCount).every(Boolean)
+    && new Set(selection.filter(Boolean)).size === selectedArtistCount;
   const currentBallot = votes?.[category==='male'?'maleBallot':'femaleBallot'];
   const votedToday = votes?.competitionDate===date && currentBallot?.status==='saved';
   const otherCategory: Category = category==='male'?'female':'male';
@@ -260,19 +265,19 @@ export function App() {
       {tab==='idols' && <Suspense fallback={<LoadingSkeleton/>}><IdolLeague key={user?.id || 'public'} user={user} onLogin={()=>setShowLogin(true)}/></Suspense>}
       {tab==='periodic' && <Suspense fallback={<LoadingSkeleton/>}><PeriodicVoting key={user?.id||'public'} user={user} onLogin={()=>setShowLogin(true)}/></Suspense>}
       {tab==='history' && <Suspense fallback={<LoadingSkeleton/>}><LifetimeHistory key={user?.id || 'public'} artists={artists} isAdmin={user?.role==='admin'} cache={historyCache}/></Suspense>}
-      {tab==='voting' && <section className={card+' max-w-3xl mx-auto'}><div className="flex justify-between gap-4"><div><p className="text-emerald-300 text-xs uppercase tracking-widest">Votación diaria</p><h1 className="text-3xl font-bold mt-2">Tu Top 5</h1><p className="text-neutral-400 mt-2">{date} · Panamá · hasta las 23:59</p></div><Lock className="text-neutral-600"/></div>
+      {tab==='voting' && <section className={card+' max-w-3xl mx-auto'}><div className="flex justify-between gap-4"><div><p className="text-emerald-300 text-xs uppercase tracking-widest">Votación diaria</p><h1 className="text-3xl font-bold mt-2">Tu voto de artistas</h1><p className="text-neutral-400 mt-2">{date} · Panamá · hasta las 23:59</p></div><Lock className="text-neutral-600"/></div>
         {!user ? <div className="mt-8"><p className="mb-4">Inicia sesión para guardar tu selección.</p><button className={button} onClick={()=>setShowLogin(true)}>Entrar</button></div> : <>
           {!season && <p className="mt-6 text-amber-300">No hay una temporada activa.</p>}
           <div className="category-tabs">{(['male','female'] as Category[]).map(c=><button key={c} aria-pressed={category===c} onClick={()=>{setCategory(c);setNotice('');}} className={'category-tab '+(category===c?'is-active':'')}>{c==='male'?'Hombres':'Mujeres'}</button>)}</div>
           {!votes || votes.competitionDate!==date ? <p className="text-neutral-400 py-6" role="status">Cargando tu votación de hoy…</p> : votedToday ? <div className="saved-vote">
-            <div className="saved-vote-heading"><div className="vote-success-icon"><CheckCircle2 aria-hidden="true"/></div><div><p className="eyebrow">{category==='male'?'Hombres':'Mujeres'} · confirmado</p><h2>Ya votaste hoy</h2><p>Tu Top 5 está guardado. Gracias por participar.</p></div></div>
+            <div className="saved-vote-heading"><div className="vote-success-icon"><CheckCircle2 aria-hidden="true"/></div><div><p className="eyebrow">{category==='male'?'Hombres':'Mujeres'} · confirmado</p><h2>Ya votaste hoy</h2><p>Tu selección está guardada. Gracias por participar.</p></div></div>
             {season && <NextVoteClock competitionDate={date}/>}
-            <div className="saved-ballot"><h3>Tu selección de hoy</h3><ol>{[...(currentBallot?.items || [])].sort((a,b)=>a.rankPosition-b.rankPosition).map(item=><li key={item.rankPosition}><span className="saved-ballot-rank">{String(item.rankPosition).padStart(2,'0')}</span><strong>{artists.find(artist=>artist.id===item.artistId)?.displayName || 'Artista del catálogo'}</strong><span className="saved-ballot-points">{6-item.rankPosition} pts</span></li>)}</ol></div>
+            <div className="saved-ballot"><h3>Tu selección de hoy</h3><ol>{[...(currentBallot?.items || [])].sort((a,b)=>a.rankPosition-b.rankPosition).map(item=><li key={item.rankPosition}><span className="saved-ballot-rank">{String(item.rankPosition).padStart(2,'0')}</span><strong>{artists.find(artist=>artist.id===item.artistId)?.displayName || 'Artista del catálogo'}</strong><span className="saved-ballot-points">{dailyArtistPoints(item.rankPosition)} pts</span></li>)}</ol></div>
             {season && !otherVoted && <button type="button" className={button+' other-vote-button'} onClick={()=>setCategory(otherCategory)}>Votar en {otherCategory==='male'?'Hombres':'Mujeres'} <span aria-hidden="true">→</span></button>}
             {otherVoted && <p className="both-votes-done"><CheckCircle2 size={16} aria-hidden="true"/> Ya completaste ambas categorías.</p>}
           </div> : <>
-          <div className="space-y-4">{selection.map((id,i)=><label key={i} className="flex items-center gap-4"><span className="text-emerald-300 font-bold text-xl w-8">{i+1}</span><select aria-label={`Artista en posición ${i+1}`} className={field} value={id} disabled={!canVote || savingVotes[category]} onChange={e=>setSelections(previous=>({...previous,[category]:previous[category].map((v,j)=>j===i?e.target.value:v)}))}><option value="">Selecciona un artista</option>{eligible.map(a=><option key={a.id} value={a.id} disabled={selection.includes(a.id)&&id!==a.id}>{a.displayName}</option>)}</select><span className="text-sm text-neutral-500 w-14">{5-i} pts</span></label>)}</div>
-          <button className={button+' mt-7'} disabled={savingVotes[category] || !canVote || selection.some(v=>!v) || new Set(selection).size!==5} onClick={()=>void submitVote()}>{savingVotes[category]?'Guardando…':'Guardar Top 5'}</button><p className="text-xs text-neutral-500 mt-4">Un Top 5 por categoría y día. Puntos: 5, 4, 3, 2 y 1.</p>
+          <div className="space-y-4">{selection.map((id,i)=><label key={i} className="flex items-center gap-4"><span className="text-emerald-300 font-bold text-xl w-8">{i+1}</span><select aria-label={`Artista en posición ${i+1}`} className={field} value={id} disabled={!canVote || savingVotes[category]} onChange={e=>setSelections(previous=>({...previous,[category]:previous[category].map((v,j)=>j===i?e.target.value:v)}))}><option value="">Selecciona un artista</option>{eligible.map(a=><option key={a.id} value={a.id} disabled={selection.includes(a.id)&&id!==a.id}>{a.displayName}</option>)}</select><span className="text-sm text-neutral-500 w-14">{dailyArtistPoints(i + 1)} pts</span></label>)}</div>
+          <button className={button+' mt-7'} disabled={savingVotes[category] || !canVote || !validArtistDraft} onClick={()=>void submitVote()}>{savingVotes[category]?'Guardando…':'Guardar selección'}</button><p className="text-xs text-neutral-500 mt-4">Elige de {dailyArtistLimits.min} a {dailyArtistLimits.max} artistas por categoría, en orden y sin dejar espacios.</p>
           </>}
 
         </>}
@@ -286,7 +291,7 @@ export function App() {
       </form></section><section className={card}><div className="flex flex-wrap justify-between gap-4 mb-5"><h2 className="text-xl font-bold">Catálogo · {artists.length} artistas</h2><input aria-label="Buscar artista" className={field+' max-w-xs'} placeholder="Buscar artista…" value={search} onChange={e=>setSearch(e.target.value)}/></div><div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">{artists.filter(a=>a.displayName.toLowerCase().includes(search.toLowerCase())).map(a=><div key={a.id} className="flex gap-3 items-center border border-neutral-800 rounded-xl p-3">{a.imageUrl && <img src={a.imageUrl} alt="" loading="lazy" decoding="async" width={40} height={40} className="w-10 h-10 object-cover rounded-full"/>}<div><p className="font-semibold text-sm">{a.displayName}</p><p className="text-xs text-neutral-500">{a.category==='male'?'Hombres':'Mujeres'} · {a.musicScene}</p></div></div>)}</div></section></>}
       <footer className="border-t border-neutral-800 pt-6 text-xs text-neutral-500 flex flex-wrap justify-between gap-3"><span>Fan Choice Most Populars</span><span>Votos + Bonus · Panamá</span></footer>
     </main>
-    {voteConfirmation && <VoteConfirmation category={voteConfirmation} onClose={()=>setVoteConfirmation(null)}/>}
+    {voteConfirmation && <VoteConfirmation category={voteConfirmation.category} topSize={voteConfirmation.count} onClose={()=>setVoteConfirmation(null)}/>}
     {showLogin && <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-5"><section role="dialog" aria-modal="true" aria-labelledby="login-title" className={card+' w-full max-w-md bg-neutral-950'}><h2 id="login-title" className="text-2xl font-bold mb-2">Entrar</h2><p className="text-neutral-400 text-sm mb-6">Usa tu usuario y contraseña para votar.</p><form className="space-y-4" onSubmit={e=>{e.preventDefault();void action(async()=>{const d=await unwrap(apiClient.login(username.trim(),password));apiClient.setToken(d.token);setUser(d.user);setPassword('');await refreshVotes();setShowLogin(false);setNotice(`Bienvenido, ${d.user.displayName}.`);});}}><input autoFocus required autoComplete="username" aria-label="Usuario" className={field} placeholder="Usuario" value={username} onChange={e=>setUsername(e.target.value)}/><input required type="password" autoComplete="current-password" aria-label="Contraseña" className={field} placeholder="Contraseña" value={password} onChange={e=>setPassword(e.target.value)}/>{error && <ErrorNotice compact error={error} onDismiss={()=>setError(null)}/>}<div className="flex justify-between items-center"><button type="button" className="text-neutral-400" disabled={busy} onClick={()=>{setShowLogin(false);setPassword('');setError(null);}}>Cancelar</button><button disabled={busy} className={button}>{busy?'Entrando…':'Entrar'}</button></div></form></section></div>}
   </div>;
 }

@@ -36,7 +36,7 @@ export interface Artist {
 }
 
 export interface BallotItem {
-  rankPosition: 1 | 2 | 3 | 4 | 5;
+  rankPosition: number;
   artistId: string;
   pointsAwarded: 5 | 4 | 3 | 2 | 1;
 }

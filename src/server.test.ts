@@ -101,8 +101,8 @@ export async function runApiIntegrationTests(): Promise<{ passed: number; failed
     assert(periodicNoAuth.status===401,'Periodic personal status requires authentication');
     const maleArtists=periodicCatalog.artists.filter((a:any)=>a.category==='male'&&a.artistType==='group').slice(0,10).map((a:any)=>a.id);
     const femaleArtists=periodicCatalog.artists.filter((a:any)=>a.category==='female'&&a.artistType==='group').slice(0,10).map((a:any)=>a.id);
-    const maleIdols=periodicCatalog.idols.filter((a:any)=>a.category==='male').slice(0,10).map((a:any)=>a.id);
-    const femaleIdols=periodicCatalog.idols.filter((a:any)=>a.category==='female').slice(0,10).map((a:any)=>a.id);
+    const maleIdols=periodicCatalog.idols.filter((a:any)=>a.category==='male').slice(0,25).map((a:any)=>a.id);
+    const femaleIdols=periodicCatalog.idols.filter((a:any)=>a.category==='female').slice(0,25).map((a:any)=>a.id);
     const weeklyArtistBody={kind:'weekly_artists',seasonId:periodicCatalog.season.id,periodKey:periodicCatalog.periods.weekly_artists,selections:{male:maleArtists,female:femaleArtists}};
     const invalidPeriodic=await fetch(`${baseUrl}/api/v1/periodic/votes`,{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${adminToken}`},body:JSON.stringify({...weeklyArtistBody,selections:{male:maleArtists.slice(0,9),female:femaleArtists}})});
     assert(invalidPeriodic.status===400,'Periodic API rejects incomplete Top 10');
@@ -133,6 +133,21 @@ export async function runApiIntegrationTests(): Promise<{ passed: number; failed
     assert(leaderboard.results.weekly_idols.male[0].points===50,'Weekly idol winner receives 50 points');
     const idolRankings=await (await fetch(`${baseUrl}/api/v1/idols`)).json();
     assert(idolRankings.rankings.female.some((row:any)=>row.periodicPoints===125),'Monthly bias combines 75 monthly points with the 50-point weekly idol win');
+
+    assert(idolRankings.rankings.female.find((row:any)=>row.id===femaleIdols[24])?.periodicPoints===8,
+      'The 25th weekly idol scores 8 season points');
+    const idolHeaders = {'Content-Type':'application/json',Authorization:`Bearer ${samToken}`};
+    const dailyIdolBody = {seasonId:periodicCatalog.season.id,competitionDate:idolRankings.competitionDate};
+    const postIdols = (body: object) => fetch(`${baseUrl}/api/v1/idols/votes`, {
+      method:'POST', headers:idolHeaders, body:JSON.stringify({...dailyIdolBody,...body}),
+    });
+    assert((await postIdols({kind:'favorites',category:'all',idolIds:[femaleIdols[0]]})).status===201,
+      'Season favorites remain available');
+    assert((await postIdols({kind:'daily',category:'female',idolIds:femaleIdols})).status===201,
+      'Daily idol API accepts 25 selections');
+    const dailyRanks = await (await fetch(`${baseUrl}/api/v1/idols`)).json();
+    assert(dailyRanks.rankings.female.find((row:any)=>row.id===femaleIdols[24])?.votePoints===1,
+      'The 25th daily idol scores 1 season point');
 
     // 8. Votes Today Status
     const votesRes = await fetch(`${baseUrl}/api/v1/votes/today`, {

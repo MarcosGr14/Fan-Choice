@@ -1,3 +1,4 @@
+import { dailyIdolPoints } from '../data/voteRules';
 import { IDOLS } from '../data/idols';
 import type { IdolRankings, IdolSubmission } from '../types/idols';
 import type { PeriodicSubmission } from '../types/idols';
@@ -16,7 +17,7 @@ export function rankIdols(submissions: IdolSubmission[], seasonId: string, onlyS
       const row = byId.get(id);
       if (!row) return;
       if (submission.kind === 'favorites') row.favoritePoints += 5;
-      else { row.votePoints += 10-index; if (index === 0) row.firstPlaces++; }
+      else { row.votePoints += dailyIdolPoints(index + 1); if (index === 0) row.firstPlaces++; }
       row.points = row.favoritePoints + row.votePoints;
     });
   }

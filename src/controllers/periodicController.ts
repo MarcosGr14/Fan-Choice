@@ -3,7 +3,7 @@ import type { AuthenticatedRequest } from '../middleware/auth';
 import { leagueStore } from '../repositories/leagueStore';
 import { IDOLS } from '../data/idols';
 import { today } from '../services/dates';
-import { currentPeriod, validSelections } from '../services/periodicVoting';
+import { currentPeriod, periodicPoints, validSelections } from '../services/periodicVoting';
 import type { PeriodicVoteKind } from '../types/idols';
 
 const kinds: PeriodicVoteKind[]=['weekly_artists','weekly_idols','monthly_artists','monthly_idols'];
@@ -16,8 +16,9 @@ export function catalog(_req: AuthenticatedRequest,res:Response) {
     const key=currentPeriod(kind);const votes=leagueStore.periodicSubmissions.filter(v=>v.seasonId===season?.id&&v.kind===kind&&v.periodKey===key);
     const isArtist=kind.endsWith('artists');const catalogItems=isArtist?artists:IDOLS;
     const categoryResults=Object.fromEntries((['male','female'] as const).map(category=>{
-      const score=new Map<string,number>();votes.forEach(v=>v.selections[category].forEach((id,index)=>score.set(id,(score.get(id)||0)+(kind==='weekly_artists'?(index===0?25:15):kind==='weekly_idols'?(index===0?50:20):kind==='monthly_artists'?50:index===0?75:50))));
-      const ranked=Array.from(score,([id,points])=>{const item=catalogItems.find(candidate=>candidate.id===id);return {item,points,name:item?('displayName' in item?item.displayName:item.name):''};}).filter((entry):entry is {item:NonNullable<typeof entry.item>;points:number;name:string}=>!!entry.item).sort((a,b)=>b.points-a.points||a.name.localeCompare(b.name)).slice(0,10).map(({item,points})=>({item,points}));
+      const ids = catalogItems.filter(item => item.category === category).map(item => item.id);
+      const score = season ? periodicPoints(votes, season.id, kind, ids, category).filter(row => row.points > 0) : [];
+      const ranked=score.map(({id,points})=>{const item=catalogItems.find(candidate=>candidate.id===id);return {item,points,name:item?('displayName' in item?item.displayName:item.name):''};}).filter((entry):entry is {item:NonNullable<typeof entry.item>;points:number;name:string}=>!!entry.item).sort((a,b)=>b.points-a.points||a.name.localeCompare(b.name)).slice(0,10).map(({item,points})=>({item,points}));
       return [category,ranked];
     }));return [kind,{periodKey:key,voters:votes.length,...categoryResults}];
   }));

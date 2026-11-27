@@ -1,3 +1,4 @@
+import { dailyIdolLimits, dailyIdolPoints, validVoteCount } from './data/voteRules';
 import React, { useEffect, useRef, useState } from 'react';
 import { apiClient } from './services/apiClient';
 import type { Category, Participant } from './types';
@@ -25,7 +26,7 @@ export default function IdolLeague({user,onLogin}: {user: Participant | null; on
   const [picks,setPicks] = useState<Record<Category,string[]>>({male:[],female:[]});
   const [busy,setBusy] = useState(false);
   const [error,setError] = useState<UserError | null>(null);
-  const [confirmed,setConfirmed] = useState<Category | null>(null);
+  const [confirmed,setConfirmed] = useState<{ category: Category; count: number } | null>(null);
   const [confirmFavorites,setConfirmFavorites] = useState(false);
   const [confirmDaily,setConfirmDaily] = useState(false);
   const favoriteDialog = useRef<HTMLDialogElement>(null);
@@ -69,20 +70,20 @@ export default function IdolLeague({user,onLogin}: {user: Participant | null; on
   const saved = ready ? status?.[category] : null;
   const catalog = data.catalog.filter(i=>(onboarding || i.category===category) && `${i.name} ${i.group}`.toLocaleLowerCase().includes(search.toLocaleLowerCase()));
   async function save(kind: 'favorites'|'daily') {
-    if (!ready || saveLock.current) return;
+    if (!ready || saveLock.current || (kind === 'daily' && !validVoteCount(selection.length, dailyIdolLimits))) return;
     saveLock.current=true;setBusy(true);setError(null);
     const target=category;
     try {
       await request('/idols/votes',{method:'POST',body:JSON.stringify({kind,category:kind==='favorites'?'all':target,idolIds:kind==='favorites'?favorites:selection,seasonId:data!.season!.id,competitionDate:status!.competitionDate})});
       setStatus(previous=>previous ? {...previous,...(kind==='favorites'?{favorites:[...favorites]}:{[target]:[...selection]})}:previous);
       setConfirmFavorites(false);
-      if(kind==='daily') { setConfirmDaily(false); setConfirmed(target); }
+      if(kind==='daily') { setConfirmDaily(false); setConfirmed({ category: target, count: selection.length }); }
       void load();
     } catch(e) {setError(toUserError(e));} finally {saveLock.current=false;setBusy(false);}
   }
   function toggle(id:string) {
     if(onboarding) setFavorites(old=>old.includes(id)?old.filter(x=>x!==id):[...old,id]);
-    else setPicks(old=>({...old,[category]:old[category].includes(id)?old[category].filter(x=>x!==id):old[category].length<10?[...old[category],id]:old[category]}));
+    else setPicks(old=>({...old,[category]:old[category].includes(id)?old[category].filter(x=>x!==id):old[category].length<dailyIdolLimits.max?[...old[category],id]:old[category]}));
   }
   function move(index:number,delta:number) {
     setPicks(old=>{
@@ -105,20 +106,20 @@ export default function IdolLeague({user,onLogin}: {user: Participant | null; on
       <ol className="idol-ranking">{rows.map(row=><li key={row.id}><span className="rank-position">{String(row.rank).padStart(2,'0')}</span><IdolPortrait idol={row} priority={row.rank<=3}/><div className="min-w-0"><h3>{row.name}</h3><p>{row.group}</p><small>Favoritos {row.favoritePoints} · Votos {row.votePoints} · Mega voto {row.periodicPoints||0}</small></div><div className="idol-total"><small>Total</small><strong>{row.points}</strong></div></li>)}</ol>
     </>}
     {view==='vote' && (!user ? <div className="league-panel"><p>Entra para elegir tus favoritos y votar.</p><button className="league-button" onClick={onLogin}>Entrar</button></div> : !active ? <p className="league-panel">La votación está cerrada para esta temporada.</p> : !ready ? <LoadingSkeleton/> : <>
-      {saved && !onboarding ? <section className="league-panel"><h2>Ya votaste hoy</h2><NextVoteClock competitionDate={status!.competitionDate}/><ol className="idol-saved">{saved.map((id,index)=><li key={id}>{index+1}. {data.catalog.find(i=>i.id===id)?.name} <span>{10-index} puntos</span></li>)}</ol></section> : <>
-        <div className="league-panel"><h2>{onboarding?'Elige tus favoritos de temporada':'Tu Top 10 de hoy'}</h2><p className="text-neutral-400">{onboarding?'Marca todos los que quieras, de ambas categorías. Cada uno recibe 5 puntos. Esta selección se guarda una sola vez por temporada.':'Elige 10 idols y ordénalos: del primero al décimo reciben 10 a 1 puntos.'}</p></div>
-        {!onboarding && <ol className="idol-saved league-panel">{selection.map((id,index)=><li key={id}><span>{index+1}. {data.catalog.find(i=>i.id===id)?.name} · {10-index} pts</span><div><button disabled={busy || index===0} aria-label="Subir posición" onClick={()=>move(index,-1)}>↑</button><button disabled={busy || index===selection.length-1} aria-label="Bajar posición" onClick={()=>move(index,1)}>↓</button><button disabled={busy} aria-label="Quitar idol" onClick={()=>toggle(id)}>×</button></div></li>)}{!selection.length && <li>Tu selección aparecerá aquí.</li>}</ol>}
+      {saved && !onboarding ? <section className="league-panel"><h2>Ya votaste hoy</h2><NextVoteClock competitionDate={status!.competitionDate}/><ol className="idol-saved">{saved.map((id,index)=><li key={id}>{index+1}. {data.catalog.find(i=>i.id===id)?.name} <span>{dailyIdolPoints(index + 1)} puntos</span></li>)}</ol></section> : <>
+        <div className="league-panel"><h2>{onboarding?'Elige tus favoritos de temporada':'Tu voto de idols'}</h2><p className="text-neutral-400">{onboarding?'Marca todos los que quieras, de ambas categorías. Cada uno recibe 5 puntos. Esta selección se guarda una sola vez por temporada.':`Elige de ${dailyIdolLimits.min} a ${dailyIdolLimits.max} idols y ordénalos. Del #1 al #10 reciben de 10 a 1 puntos. Cada puesto adicional suma 1 punto.`}</p></div>
+        {!onboarding && <ol className="idol-saved league-panel">{selection.map((id,index)=><li key={id}><span>{index+1}. {data.catalog.find(i=>i.id===id)?.name} · {dailyIdolPoints(index + 1)} pts</span><div><button disabled={busy || index===0} aria-label="Subir posición" onClick={()=>move(index,-1)}>↑</button><button disabled={busy || index===selection.length-1} aria-label="Bajar posición" onClick={()=>move(index,1)}>↓</button><button disabled={busy} aria-label="Quitar idol" onClick={()=>toggle(id)}>×</button></div></li>)}{!selection.length && <li>Tu selección aparecerá aquí.</li>}</ol>}
         <input type="search" className="league-field" placeholder="Buscar idol o grupo" aria-label="Buscar idol o grupo" value={search} onChange={e=>setSearch(e.target.value)}/>
-        <div className="idol-picker">{catalog.map(idol=>{const selected=(onboarding?favorites:selection).includes(idol.id);return <button key={idol.id} type="button" aria-pressed={selected} disabled={busy || (!onboarding && selection.length===10 && !selected)} className={selected?'selected':''} onClick={()=>toggle(idol.id)}><IdolPortrait idol={idol}/><span><strong>{idol.name}</strong><small>{idol.group} · {idol.category==='male'?'Hombres':'Mujeres'}</small></span><b>{selected?(onboarding?'✓':selection.indexOf(idol.id)+1):'+'}</b></button>;})}</div>
+        <div className="idol-picker">{catalog.map(idol=>{const selected=(onboarding?favorites:selection).includes(idol.id);return <button key={idol.id} type="button" aria-pressed={selected} disabled={busy || (!onboarding && selection.length>=dailyIdolLimits.max && !selected)} className={selected?'selected':''} onClick={()=>toggle(idol.id)}><IdolPortrait idol={idol}/><span><strong>{idol.name}</strong><small>{idol.group} · {idol.category==='male'?'Hombres':'Mujeres'}</small></span><b>{selected?(onboarding?'✓':selection.indexOf(idol.id)+1):'+'}</b></button>;})}</div>
         {!catalog.length && <p>No hay coincidencias.</p>}
-        <div className="idol-save"><span>{onboarding?`${favorites.length} favoritos`:`${selection.length} / 10`}</span><button className="league-button" disabled={busy || (!onboarding && selection.length!==10) || (onboarding && favorites.length===0)} onClick={()=>onboarding?setConfirmFavorites(true):setConfirmDaily(true)}>{busy?'Guardando…':onboarding?'Guardar favoritos':'Revisar y votar'}</button></div>
+        <div className="idol-save"><span>{onboarding?`${favorites.length} favoritos`:`${selection.length} / ${dailyIdolLimits.max}`}</span><button className="league-button" disabled={busy || (!onboarding && !validVoteCount(selection.length, dailyIdolLimits)) || (onboarding && favorites.length===0)} onClick={()=>onboarding?setConfirmFavorites(true):setConfirmDaily(true)}>{busy?'Guardando…':onboarding?'Guardar favoritos':'Revisar y votar'}</button></div>
       </>}
     </>)}
-    {confirmed && <VoteConfirmation category={confirmed} topSize={10} onClose={()=>setConfirmed(null)}/>}
+    {confirmed && <VoteConfirmation category={confirmed.category} topSize={confirmed.count} onClose={()=>setConfirmed(null)}/>}
     {confirmFavorites && <dialog ref={favoriteDialog} className="vote-confirmation" aria-labelledby="favorite-confirm-title" onCancel={e=>{if(busy)e.preventDefault();else setConfirmFavorites(false);}}><h2 id="favorite-confirm-title">¿Guardar {favorites.length} favoritos?</h2>{error && <ErrorNotice compact error={error} onDismiss={()=>setError(null)}/>}<p>Recibirán 5 puntos cada uno. No podrás cambiar esta selección durante la temporada.</p><button type="button" className="league-button" disabled={busy} onClick={()=>void save('favorites')}>Confirmar favoritos</button><button type="button" className="dialog-secondary-button" disabled={busy} onClick={()=>setConfirmFavorites(false)}>Volver</button></dialog>}
     {confirmDaily && <dialog ref={dailyDialog} className="vote-confirmation idol-review-dialog" aria-labelledby="idol-review-title" onCancel={e=>{e.preventDefault();if(!busy)setConfirmDaily(false);}}>
-      <p className="eyebrow">{category==='male'?'Hombres':'Mujeres'} · revisión final</p><h2 id="idol-review-title">Confirma tu Top 10</h2><p>El voto se guardará una vez para hoy. Revisa el orden porque asigna de 10 a 1 puntos.</p>
-      <ol className="idol-review-list">{selection.map((id,index)=><li key={id}><strong>{String(index+1).padStart(2,'0')}</strong><span>{data.catalog.find(i=>i.id===id)?.name || 'Idol'}</span><b>{10-index} pts</b></li>)}</ol>
+      <p className="eyebrow">{category==='male'?'Hombres':'Mujeres'} · revisión final</p><h2 id="idol-review-title">Confirma tu Top {selection.length}</h2><p>El voto se guardará una vez para hoy. Revisa la posición y los puntos de cada idol antes de enviarlo.</p>
+      <ol className="idol-review-list">{selection.map((id,index)=><li key={id}><strong>{String(index+1).padStart(2,'0')}</strong><span>{data.catalog.find(i=>i.id===id)?.name || 'Idol'}</span><b>{dailyIdolPoints(index + 1)} pts</b></li>)}</ol>
       {error && <ErrorNotice compact error={error} onDismiss={()=>setError(null)}/>}<button autoFocus type="button" className="league-button" disabled={busy} onClick={()=>void save('daily')}>{busy?'Guardando…':'Confirmar voto'}</button><button type="button" className="dialog-secondary-button" disabled={busy} onClick={()=>setConfirmDaily(false)}>Volver a editar</button>
     </dialog>}
   </section>;

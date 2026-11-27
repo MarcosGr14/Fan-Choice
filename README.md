@@ -21,8 +21,8 @@ Cada temporada mantiene clasificaciones independientes para artistas hombres, ar
 
 ## Qué ofrece
 
-- **Votación diaria de artistas:** cada participante ordena un Top 5 para cada categoría.
-- **Mega Voto semanal:** Top 10 de artistas y Top 10 de idols por categoría, con una puntuación especial para el primer lugar.
+- **Votación diaria de artistas:** de 5 a 10 artistas por categoría. En idols, de 10 a 25.
+- **Mega Voto semanal:** de 10 a 15 artistas y de 10 a 25 idols por categoría, con una puntuación especial para el primer lugar.
 - **Favorito mensual:** un artista favorito por categoría y selecciones de bias y bias wrecker para idols.
 - **Rankings de temporada:** Top 10 de hombres y mujeres, ranking independiente de idols y reconocimiento al campeón absoluto de artistas.
 - **Estadísticas musicales:** reproducciones integradas en la puntuación de artistas y vistas de actividad e historial.
@@ -33,18 +33,18 @@ Cada temporada mantiene clasificaciones independientes para artistas hombres, ar
 
 ### Artistas
 
-Los votos diarios otorgan **5, 4, 3, 2 y 1 puntos** según la posición del Top 5. Las reproducciones sincronizadas también suman un bonus diario escalonado. Los votos especiales semanales y mensuales contribuyen a la clasificación de la temporada.
+Los votos diarios otorgan **5, 4, 3, 2 y 1 puntos** en los primeros cinco puestos. Los puestos del 6 al 10 suman **1 punto** cada uno. Las reproducciones sincronizadas también suman un bonus diario escalonado. Los votos especiales semanales y mensuales contribuyen a la clasificación de la temporada.
 
 ### Idols
 
-Los rankings de idols se calculan por separado de los artistas y de Spotify. Las selecciones iniciales de favoritos, los votos diarios y las votaciones especiales semanales y mensuales aportan puntos al Top 10 de cada categoría.
+Los rankings de idols se calculan por separado de los artistas y de Spotify. Las selecciones iniciales de favoritos, los votos diarios y las votaciones especiales semanales y mensuales aportan puntos a la clasificación de cada categoría. En el voto diario, los puestos del 1 al 10 reciben de **10 a 1 punto** y los puestos del 11 al 25 suman **1 punto** cada uno.
 
 ### Votaciones especiales
 
 | Votación | Selección por categoría | Puntuación |
 | --- | --- | --- |
-| Mega Voto semanal · artistas | Top 10 | 25 puntos al primer lugar; 15 a cada posición restante |
-| Mega Voto semanal · idols | Top 10 | 50 puntos al primer lugar; 20 a cada posición restante |
+| Mega Voto semanal · artistas | 10–15 | 25 al #1, 15 del #2 al #10 y 10 del #11 al #15 |
+| Mega Voto semanal · idols | 10–25 | 50 al #1, 20 del #2 al #10 y 8 del #11 al #25 |
 | Favorito mensual · artistas | 1 artista | 50 puntos |
 | Bias del mes · idols | Bias y bias wrecker | 75 y 50 puntos, respectivamente |
 

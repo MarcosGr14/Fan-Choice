@@ -1,3 +1,4 @@
+import { dailyArtistPoints } from '../data/voteRules';
 // ==============================================================================
 // K-POP / J-POP RANKINGS LEAGUE: PURE DETERMINISTIC SCORING ENGINE
 // ==============================================================================
@@ -57,18 +58,9 @@ export function calculateListeningBonus(
  * 2nd -> 4 pts
  * 3rd -> 3 pts
  * 4th -> 2 pts
- * 5th -> 1 pt
+ * 5th–10th -> 1 pt
  */
-export function getPointsForPosition(position: number): number {
-  switch (position) {
-    case 1: return 5;
-    case 2: return 4;
-    case 3: return 3;
-    case 4: return 2;
-    case 5: return 1;
-    default: return 0;
-  }
-}
+export const getPointsForPosition = dailyArtistPoints;
 
 /**
  * Computes the aggregated vote points per artist for date D across both participant ballots.

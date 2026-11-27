@@ -3,12 +3,13 @@
 // ==============================================================================
 
 import { Category, DailyBallot, BallotItem, Artist } from '../types';
+import { dailyArtistLimits, dailyArtistPoints, validVoteCount } from '../data/voteRules';
 
 export interface SubmitBallotInput {
   seasonId: string;
   participantId: string;
   category: Category;
-  items: Array<{ rankPosition: 1 | 2 | 3 | 4 | 5; artistId: string }>;
+  items: Array<{ rankPosition: number; artistId: string }>;
   competitionDate?: string; // YYYY-MM-DD
   currentTime?: Date;
   timezone?: string;
@@ -63,9 +64,9 @@ export class VotingService {
       errors.push(`Categoría inválida: '${input.category}'. Debe ser 'male' o 'female'.`);
     }
 
-    // 2. Verify item count (must be exactly 5)
-    if (!Array.isArray(input.items) || input.items.length !== 5) {
-      errors.push(`La papeleta debe contener exactamente 5 artistas seleccionados (se recibieron ${input.items?.length || 0}).`);
+    // 2. Verify item count
+    if (!Array.isArray(input.items) || !validVoteCount(input.items.length, dailyArtistLimits)) {
+      errors.push(`La papeleta debe contener entre ${dailyArtistLimits.min} y ${dailyArtistLimits.max} artistas seleccionados (se recibieron ${input.items?.length || 0}).`);
       return { isValid: false, errors };
     }
 
@@ -84,12 +85,12 @@ export class VotingService {
       artistIds.add(item.artistId);
 
       if (positions.has(item.rankPosition)) {
-        errors.push(`Posición duplicada en la papeleta: #${item.rankPosition}. Cada posición (1 al 5) debe ser única.`);
+        errors.push(`Posición duplicada en la papeleta: #${item.rankPosition}. Cada posición debe ser única.`);
       }
       positions.add(item.rankPosition);
 
-      if (item.rankPosition < 1 || item.rankPosition > 5) {
-        errors.push(`Posición fuera de rango: #${item.rankPosition}. Debe estar entre 1 y 5.`);
+      if (item.rankPosition < 1 || item.rankPosition > input.items.length) {
+        errors.push(`Posición fuera de rango: #${item.rankPosition}. Debe estar entre 1 y ${input.items.length}.`);
       }
 
       // 4. Validate artist in catalog
@@ -108,8 +109,8 @@ export class VotingService {
       }
     }
 
-    // Verify all 5 positions (1..5) are present
-    for (let pos = 1; pos <= 5; pos++) {
+    // Verify the submitted positions are consecutive.
+    for (let pos = 1; pos <= input.items.length; pos++) {
       if (!positions.has(pos)) {
         errors.push(`Falta la posición obligatoria #${pos} en la papeleta.`);
       }
@@ -133,19 +134,11 @@ export class VotingService {
   buildBallot(input: SubmitBallotInput): DailyBallot {
     const targetDate = input.competitionDate || this.getCompetitionDate(input.currentTime);
 
-    const pointsMapping: Record<number, 5 | 4 | 3 | 2 | 1> = {
-      1: 5,
-      2: 4,
-      3: 3,
-      4: 2,
-      5: 1,
-    };
-
-    const ballotItems: BallotItem[] = input.items.map((item) => ({
-      rankPosition: item.rankPosition,
-      artistId: item.artistId,
-      pointsAwarded: pointsMapping[item.rankPosition],
-    }));
+    const ballotItems: BallotItem[] = input.items.map((item) => {
+      const pointsAwarded = dailyArtistPoints(item.rankPosition);
+      if (pointsAwarded === 0) throw new RangeError('Posición de artista fuera de rango.');
+      return { ...item, pointsAwarded };
+    });
 
     return {
       id: `ballot-${input.participantId}-${input.category}-${targetDate}`,
