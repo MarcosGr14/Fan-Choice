@@ -28,12 +28,9 @@ export function runScoringEngineTests(): { passed: number; failed: number; error
   }
 
   // 1. Position-to-points mapping
-  assert(getPointsForPosition(1) === 5, '1st place must award 5 points');
-  assert(getPointsForPosition(2) === 4, '2nd place must award 4 points');
-  assert(getPointsForPosition(3) === 3, '3rd place must award 3 points');
-  assert(getPointsForPosition(4) === 2, '4th place must award 2 points');
-  assert(getPointsForPosition(5) === 1, '5th place must award 1 point');
-  assert(getPointsForPosition(10) === 1 && getPointsForPosition(11) === 0, 'Artist position 10 scores 1 and position 11 scores 0');
+  assert(Array.from({length:10}, (_, index) => getPointsForPosition(index + 1)).join(',') === '50,45,40,35,30,25,20,15,10,5',
+    'Daily artist positions score 50 through 5 in steps of 5');
+  assert(getPointsForPosition(0) === 0 && getPointsForPosition(11) === 0, 'Invalid positions score zero');
 
   // 2. Stream bonus tier mapping
   assert(calculateListeningBonus(0) === 0, '0 streams must yield 0 bonus points');

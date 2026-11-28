@@ -33,11 +33,11 @@ Cada temporada mantiene clasificaciones independientes para artistas hombres, ar
 
 ### Artistas
 
-Los votos diarios otorgan **5, 4, 3, 2 y 1 puntos** en los primeros cinco puestos. Los puestos del 6 al 10 suman **1 punto** cada uno. Las reproducciones sincronizadas también suman un bonus diario escalonado. Los votos especiales semanales y mensuales contribuyen a la clasificación de la temporada.
+Los votos diarios otorgan **50 puntos al #1**, con cinco puntos menos por posición hasta el **#10, que recibe 5 puntos**. Las reproducciones sincronizadas también suman un bonus diario escalonado. Los votos especiales semanales y mensuales contribuyen a la clasificación de la temporada.
 
 ### Idols
 
-Los rankings de idols se calculan por separado de los artistas y de Spotify. Las selecciones iniciales de favoritos, los votos diarios y las votaciones especiales semanales y mensuales aportan puntos a la clasificación de cada categoría. En el voto diario, los puestos del 1 al 10 reciben de **10 a 1 punto** y los puestos del 11 al 25 suman **1 punto** cada uno.
+Los rankings de idols se calculan por separado de los artistas y de Spotify. Las selecciones iniciales de favoritos, los votos diarios y las votaciones especiales semanales y mensuales aportan puntos a la clasificación de cada categoría. En el voto diario, el #1 recibe **30 puntos**, del #2 al #5 **25**, del #6 al #10 **20** y del #11 al #15 **15**. Del #16 al #25, los puntos bajan de **14 a 5**.
 
 ### Votaciones especiales
 

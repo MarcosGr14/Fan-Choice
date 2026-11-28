@@ -1,4 +1,4 @@
-import { dailyIdolLimits, validVoteCount } from '../data/voteRules';
+import { currentDailyScoringVersion, dailyIdolLimits, validVoteCount } from '../data/voteRules';
 import type { Request, Response } from 'express';
 import type { AuthenticatedRequest } from '../middleware/auth';
 import { leagueStore } from '../repositories/leagueStore';
@@ -19,11 +19,17 @@ export function status(req: AuthenticatedRequest, res: Response) {
   const season = leagueStore.getActiveSeason();
   const date = today();
   const submissions = leagueStore.idolSubmissions.filter(s=>s.seasonId===season?.id && s.participantId===req.user!.id);
+  const daily = submissions.filter(s => s.kind === 'daily' && s.competitionDate === date);
+  const male = daily.find(s => s.category === 'male');
+  const female = daily.find(s => s.category === 'female');
   res.setHeader('Cache-Control','no-store');
-  return res.json({seasonId:season?.id || null,competitionDate:date,
-    favorites:submissions.find(s=>s.kind==='favorites')?.idolIds ?? null,
-    male:submissions.find(s=>s.kind==='daily' && s.category==='male' && s.competitionDate===date)?.idolIds ?? null,
-    female:submissions.find(s=>s.kind==='daily' && s.category==='female' && s.competitionDate===date)?.idolIds ?? null});
+  return res.json({
+    seasonId: season?.id ?? null, competitionDate: date,
+    favorites: submissions.find(s => s.kind === 'favorites')?.idolIds ?? null,
+    male: male?.idolIds ?? null,
+    female: female?.idolIds ?? null,
+    dailyScoringVersions: { male: male?.scoringVersion ?? 1, female: female?.scoringVersion ?? 1 },
+  });
 }
 export async function submit(req: AuthenticatedRequest, res: Response) {
   const {kind,category,idolIds,seasonId,competitionDate} = req.body || {};
@@ -38,7 +44,7 @@ export async function submit(req: AuthenticatedRequest, res: Response) {
   if (kind==='daily' && !own.some(s=>s.kind==='favorites')) return res.status(409).json({error:'Guarda primero tus favoritos de temporada.'});
   if (own.some(s=>s.kind===kind && (kind==='favorites' || (s.category===category && s.competitionDate===date)))) return res.status(409).json({error:kind==='favorites'?'Ya guardaste tus favoritos de temporada.':'Ya votaste hoy en esta categoría.'});
   try {
-    await leagueStore.saveIdolSubmission({seasonId:season.id,participantId:req.user!.id,kind,category,competitionDate:date,idolIds});
+    await leagueStore.saveIdolSubmission({seasonId:season.id,participantId:req.user!.id,kind,category,competitionDate:date,idolIds,scoringVersion:kind === 'daily' ? currentDailyScoringVersion : 1});
   } catch (error: any) {
     if (error.code==='42P01') return res.status(503).json({error:'La votación de idols estará disponible cuando se complete su configuración en la base de datos.'});
     if (error.code==='23505') return res.status(409).json({error:'Esta selección ya está guardada.'});

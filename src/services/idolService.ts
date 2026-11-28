@@ -17,7 +17,7 @@ export function rankIdols(submissions: IdolSubmission[], seasonId: string, onlyS
       const row = byId.get(id);
       if (!row) return;
       if (submission.kind === 'favorites') row.favoritePoints += 5;
-      else { row.votePoints += dailyIdolPoints(index + 1); if (index === 0) row.firstPlaces++; }
+      else { row.votePoints += dailyIdolPoints(index + 1, submission.scoringVersion ?? 1); if (index === 0) row.firstPlaces++; }
       row.points = row.favoritePoints + row.votePoints;
     });
   }

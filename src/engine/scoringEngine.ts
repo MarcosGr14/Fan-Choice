@@ -52,20 +52,9 @@ export function calculateListeningBonus(
   return 0;
 }
 
-/**
- * Position-to-points mapping:
- * 1st -> 5 pts
- * 2nd -> 4 pts
- * 3rd -> 3 pts
- * 4th -> 2 pts
- * 5th–10th -> 1 pt
- */
 export const getPointsForPosition = dailyArtistPoints;
 
-/**
- * Computes the aggregated vote points per artist for date D across both participant ballots.
- * Guarantees maximum 10 vote points per artist.
- */
+/** Sum the points recorded when each ballot was accepted. */
 export function aggregateBallotVotes(
   ballots: DailyBallot[],
   category: Category
@@ -78,7 +67,7 @@ export function aggregateBallotVotes(
   for (const ballot of activeBallots) {
     for (const item of ballot.items) {
       const current = result.get(item.artistId) || { votePoints: 0, firstPlaceCount: 0 };
-      const points = getPointsForPosition(item.rankPosition);
+      const points = item.pointsAwarded;
       current.votePoints += points;
       if (item.rankPosition === 1) {
         current.firstPlaceCount += 1;

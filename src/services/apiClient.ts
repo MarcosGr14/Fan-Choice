@@ -1,3 +1,4 @@
+import type { DailyBallot } from '../types';
 // ==============================================================================
 // K-POP / J-POP RANKINGS LEAGUE: TYPED API CLIENT (WITH SAFE LOCAL FALLBACK)
 // ==============================================================================
@@ -119,7 +120,7 @@ export class ApiClient {
   }
 
   async submitBallot(category: 'male' | 'female', items: Array<{ rankPosition: number; artistId: string }>, competitionDate?: string) {
-    return this.request<{ success: boolean; message: string; updatedAt: string }>('/votes/ballot', {
+    return this.request<{ success: boolean; message: string; updatedAt: string; ballot: DailyBallot }>('/votes/ballot', {
       method: 'PUT',
       body: JSON.stringify({ category, items, competitionDate }),
     });

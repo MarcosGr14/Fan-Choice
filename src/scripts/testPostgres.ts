@@ -12,7 +12,13 @@ const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 await pool.query('DROP SCHEMA public CASCADE; CREATE SCHEMA public;');
 await pool.query(await readFile('db/migrations/001_initial_schema.sql','utf8'));
 await pool.query(await readFile('db/migrations/002_lifetime_listening.sql','utf8'));
+for (const file of ['004_idol_voting.sql','005_periodic_voting.sql','006_expand_daily_ballots.sql','007_update_daily_scoring.sql']) {
+  await pool.query(await readFile(`db/migrations/${file}`,'utf8'));
+}
 await pool.query(await readFile('db/seeds/001_seed_initial_data.sql','utf8'));
+// The backfill below spans yesterday and today in the league timezone.
+await pool.query('UPDATE seasons SET start_date=$1::date-1', [today()]);
+await pool.query('UPDATE artists_catalog SET eligibility_effective_date=$1::date-1', [today()]);
 await pool.query('UPDATE participants SET password_hash=$1', [hashPassword('TestPassword2026!')]);
 const { app } = await import('../server');
 const { leagueStore, LeagueStore } = await import('../repositories/leagueStore');
@@ -52,7 +58,7 @@ try {
   const second = new LeagueStore();await second.initFromDatabase();
   check(second.getBallot(admin.data.user.id,'male',today())?.items.length===5,'Ballot survives separate store initialization');
   const leader=second.computeCumulativeStandings().maleStats.find(s=>s.artist.id===selected[0].id);
-  check(leader?.cumulativeVotePoints===5,'Vote points survive restart without streams');await second.close();
+  check(leader?.cumulativeVotePoints===50,'Vote points survive restart without streams');await second.close();
   globalThis.fetch = async (input:any,init?:any) => {
     if(String(input).startsWith('https://provider.invalid')) return new Response(JSON.stringify({success:true,date:today(),records:[{spotify_artist_id:selected[0].spotifyArtistId,artist_name:selected[0].displayName,competition_date:today(),account_1_streams:3,account_2_streams:1,combined_streams:4,image_url:'https://example.com/artist.jpg'}]}),{status:200});
     return realFetch(input,init);
@@ -70,7 +76,7 @@ try {
   const importedStandings=(await request('/league/overview')).data.standings.maleStats.find((s:any)=>s.artist.id===selected[0].id);
   check(importedStandings.cumulativeStreams===10,'Year backfill is idempotent');
   check(importedStandings.cumulativeBonusPoints===5,'Historical bonus uses daily tiers (6 streams=3, 4 streams=2)');
-  check(importedStandings.cumulativePoints===10,'Historical daily bonuses combine with votes');
+  check(importedStandings.cumulativePoints===55,'Historical daily bonuses combine with votes');
   const newArtist={displayName:'Test Artist',spotifyArtistId:'1234567890123456789012',category:'female',artistType:'soloist',musicScene:'jpop',originCountry:'JP'};
   check((await request('/admin/artists','POST',newArtist,token)).status===201,'Create artist with UUID');
   check((await request('/admin/artists','POST',newArtist,token)).status===409,'Duplicate artist rejected');

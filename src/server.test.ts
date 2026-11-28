@@ -146,8 +146,11 @@ export async function runApiIntegrationTests(): Promise<{ passed: number; failed
     assert((await postIdols({kind:'daily',category:'female',idolIds:femaleIdols})).status===201,
       'Daily idol API accepts 25 selections');
     const dailyRanks = await (await fetch(`${baseUrl}/api/v1/idols`)).json();
-    assert(dailyRanks.rankings.female.find((row:any)=>row.id===femaleIdols[24])?.votePoints===1,
-      'The 25th daily idol scores 1 season point');
+    const dailyIdolPoints = [30,25,25,25,25,20,20,20,20,20,15,15,15,15,15,14,13,12,11,10,9,8,7,6,5];
+    assert(femaleIdols.every((id:string,index:number)=>dailyRanks.rankings.female.find((row:any)=>row.id===id)?.votePoints===dailyIdolPoints[index]),
+      'All 25 daily idol positions match the new points');
+    const savedIdols = await (await fetch(`${baseUrl}/api/v1/idols/me`,{headers:idolHeaders})).json();
+    assert(savedIdols.dailyScoringVersions.female===2,'The saved idol ballot reports its scoring version');
 
     // 8. Votes Today Status
     const votesRes = await fetch(`${baseUrl}/api/v1/votes/today`, {
@@ -176,6 +179,9 @@ export async function runApiIntegrationTests(): Promise<{ passed: number; failed
       }),
     });
     assert(submitRes.status === 200, 'PUT /api/v1/votes/ballot with valid 5 items must return 200');
+    const savedArtists = await submitRes.json();
+    assert(savedArtists.ballot.items.map((item:any)=>item.pointsAwarded).join(',')==='50,45,40,35,30',
+      'New artist ballots save the increased points');
 
     // 10. Submit Invalid Ballot (Duplicate Artist)
     const dupSubmitRes = await fetch(`${baseUrl}/api/v1/votes/ballot`, {

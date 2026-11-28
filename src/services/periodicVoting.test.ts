@@ -25,6 +25,10 @@ export function runPeriodicVotingTests(){
  assert(periodicPoints([expanded],'s','weekly_artists',['m9','m10','m14'],'male').map(x=>x.points).join(',')==='15,10,10','weekly artist positions 11–15 award 10 points');
  const female=IDOLS.filter(i=>i.category==='female').slice(0,2);
  const monthlyIdol:PeriodicSubmission={seasonId:'s',participantId:'p',kind:'monthly_idols',periodKey:'2026-11',submittedDate:'2026-11-24',selections:{male:[],female:female.map(i=>i.id)}};
+ const historicRanking=rankIdols([{
+   seasonId:'s',participantId:'p',kind:'daily',category:'female',competitionDate:'2026-11-24',idolIds:female.map(i=>i.id),
+ }],'s');
+ assert(historicRanking.female.find(i=>i.id===female[0].id)?.votePoints===10,'Older daily idol votes keep their original points');
  const ranked=rankIdols([],'s',false,[monthlyIdol]);
  assert(ranked.female.find(i=>i.id===female[0].id)?.periodicPoints===75,'monthly bias receives 75 idol points');
  assert(ranked.female.find(i=>i.id===female[1].id)?.periodicPoints===50,'monthly wrecker receives 50 idol points');

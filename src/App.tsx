@@ -27,7 +27,7 @@ type Overview = {
   standings: { maleStats: ArtistCumulativeStats[]; femaleStats: ArtistCumulativeStats[]; absoluteChampion: ArtistCumulativeStats | null };
   syncStatus: { lastSyncTimestamp: string; isMockProvider: boolean; status: string; totalRecords: number };
 };
-type SavedBallot = { status: 'saved' | 'unsubmitted'; items: {artistId: string; rankPosition: number}[] };
+type SavedBallot = { status: 'saved' | 'unsubmitted'; items: {artistId: string; rankPosition: number; pointsAwarded: number}[] };
 type Votes = { competitionDate: string; isLocked: boolean; maleBallot: SavedBallot; femaleBallot: SavedBallot };
 type ArchiveSummary = { seasonId: string; name: string; closedAt: string; totalVotesCast: number; totalStreamsLogged: number };
 const field = 'league-field';
@@ -200,8 +200,8 @@ export function App() {
     setSavingVotes(previous=>({...previous,[target]:true}));setError(null);setNotice('');
     const items=selection.slice(0,selectedArtistCount).map((artistId,i)=>({artistId,rankPosition:i+1}));
     try {
-      await unwrap(apiClient.submitBallot(target,items,date));
-      setVotes(previous=>previous && previous.competitionDate===date ? {...previous,[target==='male'?'maleBallot':'femaleBallot']:{status:'saved',items}} : previous);
+      const { ballot } = await unwrap(apiClient.submitBallot(target,items,date));
+      setVotes(previous=>previous && previous.competitionDate===date ? {...previous,[target==='male'?'maleBallot':'femaleBallot']:{status:'saved',items:ballot.items}} : previous);
       setVoteConfirmation({ category: target, count: items.length });
     } catch(e) {
       reportError(e,()=>submitVote());
@@ -272,7 +272,7 @@ export function App() {
           {!votes || votes.competitionDate!==date ? <p className="text-neutral-400 py-6" role="status">Cargando tu votación de hoy…</p> : votedToday ? <div className="saved-vote">
             <div className="saved-vote-heading"><div className="vote-success-icon"><CheckCircle2 aria-hidden="true"/></div><div><p className="eyebrow">{category==='male'?'Hombres':'Mujeres'} · confirmado</p><h2>Ya votaste hoy</h2><p>Tu selección está guardada. Gracias por participar.</p></div></div>
             {season && <NextVoteClock competitionDate={date}/>}
-            <div className="saved-ballot"><h3>Tu selección de hoy</h3><ol>{[...(currentBallot?.items || [])].sort((a,b)=>a.rankPosition-b.rankPosition).map(item=><li key={item.rankPosition}><span className="saved-ballot-rank">{String(item.rankPosition).padStart(2,'0')}</span><strong>{artists.find(artist=>artist.id===item.artistId)?.displayName || 'Artista del catálogo'}</strong><span className="saved-ballot-points">{dailyArtistPoints(item.rankPosition)} pts</span></li>)}</ol></div>
+            <div className="saved-ballot"><h3>Tu selección de hoy</h3><ol>{[...(currentBallot?.items || [])].sort((a,b)=>a.rankPosition-b.rankPosition).map(item=><li key={item.rankPosition}><span className="saved-ballot-rank">{String(item.rankPosition).padStart(2,'0')}</span><strong>{artists.find(artist=>artist.id===item.artistId)?.displayName || 'Artista del catálogo'}</strong><span className="saved-ballot-points">{item.pointsAwarded} pts</span></li>)}</ol></div>
             {season && !otherVoted && <button type="button" className={button+' other-vote-button'} onClick={()=>setCategory(otherCategory)}>Votar en {otherCategory==='male'?'Hombres':'Mujeres'} <span aria-hidden="true">→</span></button>}
             {otherVoted && <p className="both-votes-done"><CheckCircle2 size={16} aria-hidden="true"/> Ya completaste ambas categorías.</p>}
           </div> : <>

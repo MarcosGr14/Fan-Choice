@@ -74,8 +74,8 @@ export class PostgresPersistence {
 
   async loadIdolSubmissions(): Promise<IdolSubmission[]> {
     try {
-      const { rows } = await this.pool.query('SELECT season_id,participant_id,kind,category,competition_date,idol_ids FROM idol_submissions');
-      return rows.map(r => ({seasonId:r.season_id,participantId:r.participant_id,kind:r.kind,category:r.category,competitionDate:r.competition_date,idolIds:r.idol_ids}));
+      const { rows } = await this.pool.query('SELECT season_id,participant_id,kind,category,competition_date,idol_ids,scoring_version FROM idol_submissions');
+      return rows.map(r => ({seasonId:r.season_id,participantId:r.participant_id,kind:r.kind,category:r.category,competitionDate:r.competition_date,idolIds:r.idol_ids,scoringVersion:r.scoring_version}));
     } catch (error: any) {
       // Keep the existing league available until migration 004 has been applied.
       if (error.code === '42P01') return [];
@@ -84,8 +84,8 @@ export class PostgresPersistence {
   }
 
   async saveIdolSubmission(s: IdolSubmission) {
-    await this.pool.query('INSERT INTO idol_submissions (season_id,participant_id,kind,category,competition_date,idol_ids) VALUES ($1,$2,$3,$4,$5,$6)',
-      [s.seasonId,s.participantId,s.kind,s.category,s.competitionDate,JSON.stringify(s.idolIds)]);
+    await this.pool.query('INSERT INTO idol_submissions (season_id,participant_id,kind,category,competition_date,idol_ids,scoring_version) VALUES ($1,$2,$3,$4,$5,$6,$7)',
+      [s.seasonId,s.participantId,s.kind,s.category,s.competitionDate,JSON.stringify(s.idolIds),s.scoringVersion ?? 1]);
   }
 
   async loadPeriodicSubmissions(): Promise<PeriodicSubmission[]> {

@@ -38,7 +38,7 @@ export interface Artist {
 export interface BallotItem {
   rankPosition: number;
   artistId: string;
-  pointsAwarded: 5 | 4 | 3 | 2 | 1;
+  pointsAwarded: number;
 }
 
 export interface DailyBallot {
@@ -72,9 +72,9 @@ export interface StreamBonusTier {
 export interface ArtistDailyScore {
   artistId: string;
   competitionDate: string;
-  votePoints: number; // 0..10
+  votePoints: number;
   listeningBonus: number; // 0..5
-  totalDailyPoints: number; // 0..15
+  totalDailyPoints: number;
   dailyStreams: number;
   account1Streams: number;
   account2Streams: number;

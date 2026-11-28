@@ -13,15 +13,25 @@ export function validVoteCount(count: number, limits: { min: number; max: number
   return count >= limits.min && count <= limits.max;
 }
 
-const dailyArtistScores = [5, 4, 3, 2, 1, 1, 1, 1, 1, 1] as const;
+export const currentDailyScoringVersion = 2;
+export type DailyScoringVersion = 1 | typeof currentDailyScoringVersion;
 
-export function dailyArtistPoints(position: number): (typeof dailyArtistScores)[number] | 0 {
-  return dailyArtistScores[position - 1] ?? 0;
+export function dailyArtistPoints(position: number): number {
+  if (!Number.isInteger(position) || position < 1 || position > dailyArtistLimits.max) return 0;
+  return 5 * (11 - position);
 }
 
-export function dailyIdolPoints(position: number): number {
-  if (position < 1 || position > dailyIdolLimits.max) return 0;
-  return Math.max(1, 11 - position);
+export function dailyIdolPoints(
+  position: number,
+  version: DailyScoringVersion = currentDailyScoringVersion,
+): number {
+  if (!Number.isInteger(position) || position < 1 || position > dailyIdolLimits.max) return 0;
+  if (version === 1) return Math.max(1, 11 - position);
+  if (position === 1) return 30;
+  if (position <= 5) return 25;
+  if (position <= 10) return 20;
+  if (position <= 15) return 15;
+  return 30 - position;
 }
 
 export function pointsForPeriodicPosition(kind: PeriodicVoteKind, position: number): number {
